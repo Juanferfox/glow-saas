@@ -767,7 +767,7 @@ spa-saas/
 
 ---
 
-### Sprint 7 — Notificaciones push + Polish (1 semana)
+### Sprint 7 — Notificaciones push + Polish ✅ COMPLETADO
 
 - [ ] Implementar Web Push completo (VAPID keys + service worker)
 - [ ] `InstallPrompt` refinado con animación
@@ -808,8 +808,8 @@ spa-saas/
 | Sprint 4 | 1.5 semanas | Semana 6–7   | ✅ Completado  |
 | Sprint 5 | 1.5 semanas | Semana 8–9   | ✅ Completado  |
 | Sprint 6 | 1.5 semanas | Semana 10–11 | ✅ Completado  |
-| Sprint 7 | 1 semana    | Semana 12    | 🔄 En curso    |
-| Sprint 8 | 1 semana    | Semana 13    | ⏳ Pendiente   |
+| Sprint 7 | 1 semana    | Semana 12    | ✅ Completado  |
+| Sprint 8 | 1 semana    | Semana 13    | 🔄 En curso    |
 
 **Total: ~13 semanas (3 meses) trabajando solo como Frontend Senior.**
 

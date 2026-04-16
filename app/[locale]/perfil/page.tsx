@@ -9,8 +9,10 @@ import { LocaleSelector } from "@/components/i18n/LocaleSelector";
 import { SignOutButton } from "@/components/auth/SignOutButton";
 import { NotificationsRow } from "@/components/profile/NotificationsRow";
 import { getMyAppointments } from "@/lib/data/appointments";
+import { getMyNotifications } from "@/lib/data/notifications";
 import { UpcomingAppointments } from "@/components/profile/UpcomingAppointments";
-import { Calendar } from "lucide-react";
+import { NotificationCenter } from "@/components/profile/NotificationCenter";
+import { Calendar, Bell } from "lucide-react";
 
 interface PageProps {
   params: Promise<{ locale: string }>;
@@ -207,6 +209,16 @@ export default async function PerfilPage({ params }: PageProps) {
         )}
       </section>
 
+      {/* Notificaciones */}
+      <section id="notificaciones" aria-labelledby="notifs-heading" className="scroll-mt-20 space-y-4">
+        {tenant && (
+          <NotificationCenter
+            notifications={await getMyNotifications(tenant.id)}
+            tenant={tenant}
+            locale={locale}
+          />
+        )}
+      </section>
 
       {/* Seguridad */}
       <section aria-labelledby="security-heading" className="space-y-3">

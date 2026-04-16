@@ -3,6 +3,8 @@ import Link from "next/link";
 import { getLocale } from "next-intl/server";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
 import { LanguageSwitcher } from "@/components/i18n/LanguageSwitcher";
+import { NotificationBell } from "@/components/profile/NotificationBell";
+import { getMyNotifications } from "@/lib/data/notifications";
 import type { Tenant } from "@/lib/supabase/types";
 
 interface TopBarProps {
@@ -20,6 +22,8 @@ interface TopBarProps {
  */
 export async function TopBar({ tenant }: TopBarProps) {
   const locale = await getLocale();
+  const notifications = tenant ? await getMyNotifications(tenant.id) : [];
+  const unreadCount = notifications.filter(n => !n.read).length;
 
   return (
     <header
@@ -36,7 +40,7 @@ export async function TopBar({ tenant }: TopBarProps) {
           {tenant?.logo_url ? (
             <Image
               src={tenant.logo_url}
-              alt={tenant.name}
+              alt={tenant.name || "Logo"}
               width={120}
               height={32}
               className="h-8 w-auto object-contain"
@@ -53,7 +57,8 @@ export async function TopBar({ tenant }: TopBarProps) {
         </Link>
 
         {/* Controles derechos */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2">
+          <NotificationBell locale={locale} unreadCount={unreadCount} />
           <LanguageSwitcher />
           <ThemeToggle />
         </div>
