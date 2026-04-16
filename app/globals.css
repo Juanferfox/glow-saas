@@ -122,9 +122,76 @@
     @apply border-border outline-ring/50;
   }
   body {
-    @apply bg-background text-foreground;
+    /* Usa los brand tokens del tenant; el fallback son los valores de shadcn */
+    background-color: var(--brand-bg, var(--background));
+    color: var(--brand-text, var(--foreground));
   }
   html {
     @apply font-sans;
   }
+}
+
+/* ── Tokens de branding del tenant ──────────────────────────────────────────
+   Valores por defecto — se sobreescriben con los CSS vars del tenant
+   inyectados inline en el <head> por app/[locale]/layout.tsx
+   ─────────────────────────────────────────────────────────────────────────── */
+:root {
+  --brand-primary: #7f77dd;
+  --brand-bg: #ffffff;
+  --brand-text: #1a1a1a;
+  --brand-surface: #f5f5f5;
+  --brand-border: #e0e0e0;
+  --brand-dark-bg: #0f0f0f;
+  --brand-dark-surface: #1c1c1c;
+  --brand-dark-text: #f0f0f0;
+  --brand-dark-border: #2e2e2e;
+  --brand-radius: 8px;
+  --font-heading: Georgia, serif;
+  --font-body: system-ui, sans-serif;
+}
+
+[data-theme="dark"] {
+  --brand-bg: var(--brand-dark-bg);
+  --brand-surface: var(--brand-dark-surface);
+  --brand-text: var(--brand-dark-text);
+  --brand-border: var(--brand-dark-border);
+}
+
+/* ── Transición suave de tema ────────────────────────────────────────────── */
+*,
+*::before,
+*::after {
+  transition-property: background-color, border-color, color;
+  transition-duration: 150ms;
+  transition-timing-function: ease;
+}
+
+/* Exceptuar las transiciones de animaciones específicas */
+[data-no-transition] * {
+  transition: none !important;
+}
+
+/* ── Tipografía del tenant ───────────────────────────────────────────────── */
+.font-heading {
+  font-family: var(--font-heading);
+}
+
+.font-body {
+  font-family: var(--font-body);
+}
+
+/* ── Scrollbar personalizada ─────────────────────────────────────────────── */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--brand-border);
+  border-radius: 999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--brand-primary);
 }

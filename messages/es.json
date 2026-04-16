@@ -1,0 +1,104 @@
+{
+  "nav": {
+    "home": "Inicio",
+    "appointments": "Citas",
+    "store": "Tienda",
+    "points": "Mis puntos",
+    "profile": "Perfil",
+    "solar": "Bronceo solar",
+    "admin": "Panel admin"
+  },
+  "auth": {
+    "login": "Iniciar sesión",
+    "logout": "Cerrar sesión",
+    "loginWith": "Iniciar sesión con {provider}",
+    "loginDescription": "Inicia sesión para agendar citas y acumular puntos",
+    "profile": "Mi perfil"
+  },
+  "home": {
+    "bookNow": "Agendar cita",
+    "viewServices": "Ver servicios",
+    "ourServices": "Nuestros servicios",
+    "loyaltyTitle": "Acumula puntos con cada visita",
+    "loyaltyDescription": "Gana puntos por cada cita, compra y referido. Canjéalos por descuentos y servicios gratis.",
+    "joinProgram": "Únete al programa",
+    "reviews": "Lo que dicen nuestros clientes",
+    "installApp": "Instalar la app",
+    "installDescription": "Agrega esta app a tu pantalla de inicio para acceder más rápido."
+  },
+  "booking": {
+    "title": "Agendar cita",
+    "selectService": "Selecciona un servicio",
+    "selectSpecialist": "Selecciona un especialista",
+    "anySpecialist": "Cualquier especialista disponible",
+    "selectDate": "Selecciona una fecha",
+    "selectTime": "Selecciona un horario",
+    "confirm": "Confirmar cita",
+    "summary": "Resumen de tu cita",
+    "confirmed": "¡Cita confirmada!",
+    "confirmationMessage": "Recibirás un recordatorio 24 horas antes.",
+    "cancel": "Cancelar cita",
+    "cancelWarning": "Las cancelaciones tardías (menos de 2h) descuentan {points} puntos.",
+    "myAppointments": "Mis citas",
+    "upcoming": "Próximas",
+    "past": "Historial",
+    "status": {
+      "pending": "Pendiente",
+      "confirmed": "Confirmada",
+      "completed": "Completada",
+      "cancelled": "Cancelada"
+    }
+  },
+  "points": {
+    "balance": "Tu saldo de puntos",
+    "history": "Historial",
+    "redeem": "Canjear",
+    "howToEarn": "Cómo ganar puntos",
+    "perService": "{points} puntos por servicio completado",
+    "perPurchase": "{points} puntos por cada {unit} gastado",
+    "perReferral": "{points} puntos por referido",
+    "perReview": "30 puntos por reseña aprobada"
+  },
+  "store": {
+    "title": "Tienda",
+    "addToCart": "Apartar",
+    "outOfStock": "Sin stock",
+    "myOrders": "Mis pedidos",
+    "orderStatus": {
+      "pending": "Pendiente de pago",
+      "confirmed": "Listo para recoger",
+      "delivered": "Entregado"
+    }
+  },
+  "profile": {
+    "title": "Mi perfil",
+    "language": "Idioma",
+    "theme": "Apariencia",
+    "themeLight": "Claro",
+    "themeDark": "Oscuro",
+    "themeSystem": "Sistema",
+    "notifications": "Notificaciones",
+    "notificationsPromo": "Promociones y descuentos",
+    "notificationsTips": "Tips de cuidado",
+    "referral": "Mi código de referido",
+    "shareReferral": "Compartir",
+    "referralStats": "Has invitado a {count} personas"
+  },
+  "common": {
+    "loading": "Cargando...",
+    "error": "Ocurrió un error",
+    "retry": "Reintentar",
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "confirm": "Confirmar",
+    "back": "Volver",
+    "next": "Siguiente",
+    "close": "Cerrar",
+    "search": "Buscar",
+    "filter": "Filtrar",
+    "noResults": "Sin resultados",
+    "seeAll": "Ver todos",
+    "min": "min",
+    "currency": "COP"
+  }
+}

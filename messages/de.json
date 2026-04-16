@@ -1,0 +1,104 @@
+{
+  "nav": {
+    "home": "Startseite",
+    "appointments": "Termine",
+    "store": "Shop",
+    "points": "Meine Punkte",
+    "profile": "Profil",
+    "solar": "Solarstudio",
+    "admin": "Verwaltung"
+  },
+  "auth": {
+    "login": "Anmelden",
+    "logout": "Abmelden",
+    "loginWith": "Anmelden mit {provider}",
+    "loginDescription": "Melden Sie sich an, um Termine zu buchen und Punkte zu sammeln",
+    "profile": "Mein Profil"
+  },
+  "home": {
+    "bookNow": "Termin buchen",
+    "viewServices": "Leistungen ansehen",
+    "ourServices": "Unsere Leistungen",
+    "loyaltyTitle": "Punkte bei jedem Besuch sammeln",
+    "loyaltyDescription": "Sammeln Sie Punkte für jeden Termin, Kauf und jede Empfehlung.",
+    "joinProgram": "Am Programm teilnehmen",
+    "reviews": "Was unsere Kunden sagen",
+    "installApp": "App installieren",
+    "installDescription": "Fügen Sie diese App zu Ihrem Startbildschirm hinzu."
+  },
+  "booking": {
+    "title": "Termin buchen",
+    "selectService": "Leistung auswählen",
+    "selectSpecialist": "Spezialist auswählen",
+    "anySpecialist": "Beliebiger verfügbarer Spezialist",
+    "selectDate": "Datum auswählen",
+    "selectTime": "Uhrzeit auswählen",
+    "confirm": "Termin bestätigen",
+    "summary": "Terminübersicht",
+    "confirmed": "Termin bestätigt!",
+    "confirmationMessage": "Sie erhalten 24 Stunden vorher eine Erinnerung.",
+    "cancel": "Termin absagen",
+    "cancelWarning": "Späte Absagen (weniger als 2 Stunden) ziehen {points} Punkte ab.",
+    "myAppointments": "Meine Termine",
+    "upcoming": "Bevorstehend",
+    "past": "Verlauf",
+    "status": {
+      "pending": "Ausstehend",
+      "confirmed": "Bestätigt",
+      "completed": "Abgeschlossen",
+      "cancelled": "Abgesagt"
+    }
+  },
+  "points": {
+    "balance": "Ihr Punktestand",
+    "history": "Verlauf",
+    "redeem": "Einlösen",
+    "howToEarn": "Wie man Punkte sammelt",
+    "perService": "{points} Punkte pro abgeschlossener Leistung",
+    "perPurchase": "{points} Punkte pro ausgegebenem {unit}",
+    "perReferral": "{points} Punkte pro Empfehlung",
+    "perReview": "30 Punkte pro genehmigter Bewertung"
+  },
+  "store": {
+    "title": "Shop",
+    "addToCart": "Reservieren",
+    "outOfStock": "Nicht vorrätig",
+    "myOrders": "Meine Bestellungen",
+    "orderStatus": {
+      "pending": "Zahlung ausstehend",
+      "confirmed": "Abholbereit",
+      "delivered": "Geliefert"
+    }
+  },
+  "profile": {
+    "title": "Mein Profil",
+    "language": "Sprache",
+    "theme": "Erscheinungsbild",
+    "themeLight": "Hell",
+    "themeDark": "Dunkel",
+    "themeSystem": "System",
+    "notifications": "Benachrichtigungen",
+    "notificationsPromo": "Aktionen & Rabatte",
+    "notificationsTips": "Pflegetipps",
+    "referral": "Mein Empfehlungscode",
+    "shareReferral": "Teilen",
+    "referralStats": "Sie haben {count} Personen eingeladen"
+  },
+  "common": {
+    "loading": "Laden...",
+    "error": "Ein Fehler ist aufgetreten",
+    "retry": "Erneut versuchen",
+    "save": "Speichern",
+    "cancel": "Abbrechen",
+    "confirm": "Bestätigen",
+    "back": "Zurück",
+    "next": "Weiter",
+    "close": "Schließen",
+    "search": "Suchen",
+    "filter": "Filtern",
+    "noResults": "Keine Ergebnisse",
+    "seeAll": "Alle anzeigen",
+    "min": "Min",
+    "currency": "EUR"
+  }
+}

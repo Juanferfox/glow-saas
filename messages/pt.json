@@ -1,0 +1,104 @@
+{
+  "nav": {
+    "home": "Início",
+    "appointments": "Agendamentos",
+    "store": "Loja",
+    "points": "Meus pontos",
+    "profile": "Perfil",
+    "solar": "Bronzeamento solar",
+    "admin": "Painel admin"
+  },
+  "auth": {
+    "login": "Entrar",
+    "logout": "Sair",
+    "loginWith": "Entrar com {provider}",
+    "loginDescription": "Entre para agendar consultas e acumular pontos",
+    "profile": "Meu perfil"
+  },
+  "home": {
+    "bookNow": "Agendar agora",
+    "viewServices": "Ver serviços",
+    "ourServices": "Nossos serviços",
+    "loyaltyTitle": "Acumule pontos a cada visita",
+    "loyaltyDescription": "Ganhe pontos por cada agendamento, compra e indicação.",
+    "joinProgram": "Participar do programa",
+    "reviews": "O que nossos clientes dizem",
+    "installApp": "Instalar o app",
+    "installDescription": "Adicione este app à sua tela inicial."
+  },
+  "booking": {
+    "title": "Agendar consulta",
+    "selectService": "Selecione um serviço",
+    "selectSpecialist": "Selecione um especialista",
+    "anySpecialist": "Qualquer especialista disponível",
+    "selectDate": "Selecione uma data",
+    "selectTime": "Selecione um horário",
+    "confirm": "Confirmar agendamento",
+    "summary": "Resumo do agendamento",
+    "confirmed": "Agendamento confirmado!",
+    "confirmationMessage": "Você receberá um lembrete 24 horas antes.",
+    "cancel": "Cancelar agendamento",
+    "cancelWarning": "Cancelamentos tardios (menos de 2h) deduzem {points} pontos.",
+    "myAppointments": "Meus agendamentos",
+    "upcoming": "Próximos",
+    "past": "Histórico",
+    "status": {
+      "pending": "Pendente",
+      "confirmed": "Confirmado",
+      "completed": "Concluído",
+      "cancelled": "Cancelado"
+    }
+  },
+  "points": {
+    "balance": "Seu saldo de pontos",
+    "history": "Histórico",
+    "redeem": "Resgatar",
+    "howToEarn": "Como ganhar pontos",
+    "perService": "{points} pontos por serviço concluído",
+    "perPurchase": "{points} pontos por {unit} gasto",
+    "perReferral": "{points} pontos por indicação",
+    "perReview": "30 pontos por avaliação aprovada"
+  },
+  "store": {
+    "title": "Loja",
+    "addToCart": "Reservar",
+    "outOfStock": "Sem estoque",
+    "myOrders": "Meus pedidos",
+    "orderStatus": {
+      "pending": "Aguardando pagamento",
+      "confirmed": "Pronto para retirada",
+      "delivered": "Entregue"
+    }
+  },
+  "profile": {
+    "title": "Meu perfil",
+    "language": "Idioma",
+    "theme": "Aparência",
+    "themeLight": "Claro",
+    "themeDark": "Escuro",
+    "themeSystem": "Sistema",
+    "notifications": "Notificações",
+    "notificationsPromo": "Promoções e descontos",
+    "notificationsTips": "Dicas de cuidados",
+    "referral": "Meu código de indicação",
+    "shareReferral": "Compartilhar",
+    "referralStats": "Você indicou {count} pessoas"
+  },
+  "common": {
+    "loading": "Carregando...",
+    "error": "Ocorreu um erro",
+    "retry": "Tentar novamente",
+    "save": "Salvar",
+    "cancel": "Cancelar",
+    "confirm": "Confirmar",
+    "back": "Voltar",
+    "next": "Próximo",
+    "close": "Fechar",
+    "search": "Buscar",
+    "filter": "Filtrar",
+    "noResults": "Sem resultados",
+    "seeAll": "Ver tudo",
+    "min": "min",
+    "currency": "BRL"
+  }
+}

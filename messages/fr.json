@@ -1,0 +1,104 @@
+{
+  "nav": {
+    "home": "Accueil",
+    "appointments": "Rendez-vous",
+    "store": "Boutique",
+    "points": "Mes points",
+    "profile": "Profil",
+    "solar": "Bronzage solaire",
+    "admin": "Panneau admin"
+  },
+  "auth": {
+    "login": "Se connecter",
+    "logout": "Se déconnecter",
+    "loginWith": "Se connecter avec {provider}",
+    "loginDescription": "Connectez-vous pour prendre rendez-vous et accumuler des points",
+    "profile": "Mon profil"
+  },
+  "home": {
+    "bookNow": "Prendre rendez-vous",
+    "viewServices": "Voir les services",
+    "ourServices": "Nos services",
+    "loyaltyTitle": "Gagnez des points à chaque visite",
+    "loyaltyDescription": "Gagnez des points pour chaque rendez-vous, achat et parrainage.",
+    "joinProgram": "Rejoindre le programme",
+    "reviews": "Ce que disent nos clients",
+    "installApp": "Installer l'application",
+    "installDescription": "Ajoutez cette application à votre écran d'accueil."
+  },
+  "booking": {
+    "title": "Prendre rendez-vous",
+    "selectService": "Sélectionner un service",
+    "selectSpecialist": "Sélectionner un spécialiste",
+    "anySpecialist": "N'importe quel spécialiste disponible",
+    "selectDate": "Sélectionner une date",
+    "selectTime": "Sélectionner un horaire",
+    "confirm": "Confirmer le rendez-vous",
+    "summary": "Résumé du rendez-vous",
+    "confirmed": "Rendez-vous confirmé !",
+    "confirmationMessage": "Vous recevrez un rappel 24 heures avant.",
+    "cancel": "Annuler le rendez-vous",
+    "cancelWarning": "Les annulations tardives (moins de 2h) déduisent {points} points.",
+    "myAppointments": "Mes rendez-vous",
+    "upcoming": "À venir",
+    "past": "Historique",
+    "status": {
+      "pending": "En attente",
+      "confirmed": "Confirmé",
+      "completed": "Terminé",
+      "cancelled": "Annulé"
+    }
+  },
+  "points": {
+    "balance": "Votre solde de points",
+    "history": "Historique",
+    "redeem": "Échanger",
+    "howToEarn": "Comment gagner des points",
+    "perService": "{points} points par service complété",
+    "perPurchase": "{points} points par {unit} dépensé",
+    "perReferral": "{points} points par parrainage",
+    "perReview": "30 points par avis approuvé"
+  },
+  "store": {
+    "title": "Boutique",
+    "addToCart": "Réserver",
+    "outOfStock": "Rupture de stock",
+    "myOrders": "Mes commandes",
+    "orderStatus": {
+      "pending": "En attente de paiement",
+      "confirmed": "Prêt à récupérer",
+      "delivered": "Livré"
+    }
+  },
+  "profile": {
+    "title": "Mon profil",
+    "language": "Langue",
+    "theme": "Apparence",
+    "themeLight": "Clair",
+    "themeDark": "Sombre",
+    "themeSystem": "Système",
+    "notifications": "Notifications",
+    "notificationsPromo": "Promotions & réductions",
+    "notificationsTips": "Conseils beauté",
+    "referral": "Mon code de parrainage",
+    "shareReferral": "Partager",
+    "referralStats": "Vous avez invité {count} personnes"
+  },
+  "common": {
+    "loading": "Chargement...",
+    "error": "Une erreur s'est produite",
+    "retry": "Réessayer",
+    "save": "Enregistrer",
+    "cancel": "Annuler",
+    "confirm": "Confirmer",
+    "back": "Retour",
+    "next": "Suivant",
+    "close": "Fermer",
+    "search": "Rechercher",
+    "filter": "Filtrer",
+    "noResults": "Aucun résultat",
+    "seeAll": "Voir tout",
+    "min": "min",
+    "currency": "EUR"
+  }
+}

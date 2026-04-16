@@ -1,0 +1,17 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npx create-next-app@latest . --typescript --tailwind --eslint --app --src-dir=false --import-alias=\"@/*\" --no-turbopack)",
+      "Bash(npm install:*)",
+      "Bash(npx shadcn@latest init --defaults)",
+      "Bash(node -e \"const p = require\\('./node_modules/next-intl/package.json'\\); console.log\\(p.version\\)\")",
+      "Bash(node -e \"const e = require\\('./node_modules/next-intl/package.json'\\).exports; console.log\\(JSON.stringify\\(Object.keys\\(e\\), null, 2\\)\\)\")",
+      "Bash(node -e \"const m = require\\('./node_modules/next-intl/dist/cjs/middleware.js'\\); console.log\\(Object.keys\\(m\\)\\)\")",
+      "mcp__Claude_Preview__preview_start",
+      "Bash(mkdir -p /Users/juanvasquez/dev/proyects/spa-saas/app/\\\\[locale\\\\]/auth/callback)",
+      "Bash(mkdir -p /Users/juanvasquez/dev/proyects/spa-saas/app/\\\\[locale\\\\]/auth/login)",
+      "Bash(mkdir -p /Users/juanvasquez/dev/proyects/spa-saas/app/\\\\[locale\\\\]/perfil)",
+      "Bash(npx tsc *)"
+    ]
+  }
+}

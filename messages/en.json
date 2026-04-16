@@ -1,0 +1,104 @@
+{
+  "nav": {
+    "home": "Home",
+    "appointments": "Appointments",
+    "store": "Store",
+    "points": "My points",
+    "profile": "Profile",
+    "solar": "Solar tanning",
+    "admin": "Admin panel"
+  },
+  "auth": {
+    "login": "Log in",
+    "logout": "Log out",
+    "loginWith": "Log in with {provider}",
+    "loginDescription": "Log in to book appointments and earn points",
+    "profile": "My profile"
+  },
+  "home": {
+    "bookNow": "Book now",
+    "viewServices": "View services",
+    "ourServices": "Our services",
+    "loyaltyTitle": "Earn points with every visit",
+    "loyaltyDescription": "Earn points for every appointment, purchase and referral. Redeem them for discounts and free services.",
+    "joinProgram": "Join the program",
+    "reviews": "What our clients say",
+    "installApp": "Install the app",
+    "installDescription": "Add this app to your home screen for faster access."
+  },
+  "booking": {
+    "title": "Book appointment",
+    "selectService": "Select a service",
+    "selectSpecialist": "Select a specialist",
+    "anySpecialist": "Any available specialist",
+    "selectDate": "Select a date",
+    "selectTime": "Select a time",
+    "confirm": "Confirm appointment",
+    "summary": "Appointment summary",
+    "confirmed": "Appointment confirmed!",
+    "confirmationMessage": "You will receive a reminder 24 hours before.",
+    "cancel": "Cancel appointment",
+    "cancelWarning": "Late cancellations (less than 2h) deduct {points} points.",
+    "myAppointments": "My appointments",
+    "upcoming": "Upcoming",
+    "past": "History",
+    "status": {
+      "pending": "Pending",
+      "confirmed": "Confirmed",
+      "completed": "Completed",
+      "cancelled": "Cancelled"
+    }
+  },
+  "points": {
+    "balance": "Your points balance",
+    "history": "History",
+    "redeem": "Redeem",
+    "howToEarn": "How to earn points",
+    "perService": "{points} points per completed service",
+    "perPurchase": "{points} points per {unit} spent",
+    "perReferral": "{points} points per referral",
+    "perReview": "30 points per approved review"
+  },
+  "store": {
+    "title": "Store",
+    "addToCart": "Reserve",
+    "outOfStock": "Out of stock",
+    "myOrders": "My orders",
+    "orderStatus": {
+      "pending": "Pending payment",
+      "confirmed": "Ready for pickup",
+      "delivered": "Delivered"
+    }
+  },
+  "profile": {
+    "title": "My profile",
+    "language": "Language",
+    "theme": "Appearance",
+    "themeLight": "Light",
+    "themeDark": "Dark",
+    "themeSystem": "System",
+    "notifications": "Notifications",
+    "notificationsPromo": "Promotions & discounts",
+    "notificationsTips": "Care tips",
+    "referral": "My referral code",
+    "shareReferral": "Share",
+    "referralStats": "You have referred {count} people"
+  },
+  "common": {
+    "loading": "Loading...",
+    "error": "An error occurred",
+    "retry": "Retry",
+    "save": "Save",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "back": "Back",
+    "next": "Next",
+    "close": "Close",
+    "search": "Search",
+    "filter": "Filter",
+    "noResults": "No results",
+    "seeAll": "See all",
+    "min": "min",
+    "currency": "USD"
+  }
+}
