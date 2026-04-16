@@ -13,23 +13,24 @@ export function EnhancedInstallPrompt() {
   const [platform, setPlatform] = useState<"ios" | "android" | "other">("other");
 
   useEffect(() => {
-    // 1. Verificar si ya está instalada
-    const isStandalone = window.matchMedia("(display-mode: standalone)").matches 
-      || (window.navigator as any).standalone 
-      || document.referrer.includes("android-app://");
+    // 1. Verificar si ya está instalada la PWA
+    const isStandalone = 
+      window.matchMedia("(display-mode: standalone)").matches || 
+      ("standalone" in window.navigator && (window.navigator as Navigator & { standalone: boolean }).standalone) || 
+      document.referrer.includes("android-app://");
 
     if (isStandalone) return;
 
-    // 2. Detectar plataforma
-    const ua = window.navigator.userAgent.toLowerCase();
-    if (/iphone|ipad|ipod/.test(ua)) {
-      setPlatform("ios");
-    } else if (/android/.test(ua)) {
-      setPlatform("android");
-    }
-
-    // 3. Mostrar después de un delay ligero (5s) para no ser intrusivo al inicio
+    // 2. Mostrar después de un delay ligero (5s) para no ser intrusivo al inicio
     const timer = setTimeout(() => {
+      // Detectar plataforma de forma asíncrona dentro del timer para evitar cascading renders
+      const ua = window.navigator.userAgent.toLowerCase();
+      if (/iphone|ipad|ipod/.test(ua)) {
+        setPlatform("ios");
+      } else if (/android/.test(ua)) {
+        setPlatform("android");
+      }
+
       const dismissed = localStorage.getItem("pwa-prompt-dismissed");
       if (!dismissed) setShow(true);
     }, 5000);
