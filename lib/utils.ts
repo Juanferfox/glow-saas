@@ -43,18 +43,26 @@ export function formatDate(
  * @example getTenantSlug("localhost") → null
  */
 export function getTenantSlug(hostname: string): string | null {
-  const appDomain = process.env.NEXT_PUBLIC_APP_DOMAIN ?? "localhost";
+  const appDomain = process.env.NEXT_PUBLIC_APP_DOMAIN ?? "spa-saas.com";
 
-  // Desarrollo local: spa-luna.localhost → "spa-luna"
-  if (hostname.endsWith(`.${appDomain}`) || hostname.endsWith(".localhost")) {
+  // 1. Caso: localhost (Desarrollo)
+  if (hostname.includes("localhost")) {
     const parts = hostname.split(".");
-    if (parts.length >= 2) {
-      const subdomain = parts[0];
-      // Excluir "www" y subdominios de sistema
-      if (subdomain && subdomain !== "www" && subdomain !== "app") {
-        return subdomain;
-      }
-    }
+    return parts.length > 1 && parts[0] !== "localhost" ? parts[0] : null;
+  }
+
+  // 2. Caso: Subdominio de plataforma (ej: tenant.spa-saas.com)
+  if (hostname.endsWith(`.${appDomain}`)) {
+    const subdomain = hostname.replace(`.${appDomain}`, "");
+    if (subdomain && subdomain !== "www") return subdomain;
+  }
+
+  // 3. Caso: Dominio personalizado (ej: clinicavioleta.com)
+  if (hostname !== appDomain && !hostname.endsWith(`.${appDomain}`)) {
+    // Si no es el dominio base ni un subdominio, es un dominio externo.
+    // En producción se buscaría en una tabla `tenant_domains`.
+    // Para el demo, retornamos el primer segmento del dominio.
+    return hostname.replace("www.", "").split(".")[0];
   }
 
   return null;
