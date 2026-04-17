@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { Clock } from "lucide-react";
+import { getTranslations } from "next-intl/server";
 import { getTenantText } from "@/lib/theme";
 import { formatCurrency } from "@/lib/utils";
 import type { Tenant } from "@/lib/supabase/types";
@@ -28,8 +29,10 @@ interface ServicesGridProps {
  * - Precio formateado según la moneda del tenant
  * - CTA hacia el agendamiento con el servicio pre-seleccionado
  */
-export function ServicesGrid({ tenant, locale, services }: ServicesGridProps) {
+export async function ServicesGrid({ tenant, locale, services }: ServicesGridProps) {
   if (services.length === 0) return null;
+
+  const t = await getTranslations({ locale, namespace: "home" });
 
   // Agrupar por categoría para mostrar tabs
   const categories = [...new Set(services.map((s) => s.category ?? "general"))];
@@ -44,7 +47,7 @@ export function ServicesGrid({ tenant, locale, services }: ServicesGridProps) {
             className="text-xs font-bold uppercase tracking-widest mb-1"
             style={{ color: "var(--brand-primary)" }}
           >
-            Catálogo
+            {t("catalog")}
           </p>
           <h2
             className="text-2xl font-bold"
@@ -53,7 +56,7 @@ export function ServicesGrid({ tenant, locale, services }: ServicesGridProps) {
               color: "var(--brand-text)",
             }}
           >
-            Nuestros servicios
+            {t("ourServices")}
           </h2>
         </div>
 
@@ -63,7 +66,7 @@ export function ServicesGrid({ tenant, locale, services }: ServicesGridProps) {
             className="text-sm font-semibold transition-opacity hover:opacity-70"
             style={{ color: "var(--brand-primary)" }}
           >
-            Ver todos →
+            {t("viewAll")}
           </Link>
         )}
       </div>
@@ -176,7 +179,7 @@ export function ServicesGrid({ tenant, locale, services }: ServicesGridProps) {
                   className="w-full rounded-full py-2 text-center text-xs font-semibold text-white"
                   style={{ backgroundColor: "var(--brand-primary)" }}
                 >
-                  Agendar →
+                  {t("bookCta")}
                 </div>
               </div>
             </Link>

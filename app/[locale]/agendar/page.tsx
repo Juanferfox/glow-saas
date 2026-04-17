@@ -16,12 +16,17 @@ interface PageProps {
 export default async function AgendarPage({ params }: PageProps) {
   const { locale } = await params;
 
-  // 1. Verificar autenticación
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  // 1. Verificar autenticación (en dev sin Supabase se permite sin sesión)
+  const isDevMode =
+    !process.env.NEXT_PUBLIC_SUPABASE_URL ||
+    process.env.NEXT_PUBLIC_SUPABASE_URL.includes("xxxx");
 
-  if (!user) {
-    redirect(`/${locale}/auth/login?next=/${locale}/agendar`);
+  if (!isDevMode) {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      redirect(`/${locale}/auth/login?next=/${locale}/agendar`);
+    }
   }
 
   // 2. Cargar tenant

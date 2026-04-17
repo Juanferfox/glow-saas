@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Star, Gift, Users, Sparkles } from "lucide-react";
+import { getTranslations } from "next-intl/server";
 import type { Tenant } from "@/lib/supabase/types";
 
 interface LoyaltyBannerProps {
@@ -12,29 +13,31 @@ interface LoyaltyBannerProps {
  * Muestra los 4 beneficios principales y un CTA hacia el registro.
  * Solo visible si el tenant tiene feature_loyalty activo.
  */
-export function LoyaltyBanner({ tenant, locale }: LoyaltyBannerProps) {
+export async function LoyaltyBanner({ tenant, locale }: LoyaltyBannerProps) {
   if (!tenant.feature_loyalty) return null;
+
+  const t = await getTranslations({ locale, namespace: "home" });
 
   const perks = [
     {
       icon: Star,
-      title: `${tenant.points_per_service} puntos`,
-      desc: "por cada servicio completado",
+      title: `${tenant.points_per_service} ${t("loyaltyPtsLabel")}`,
+      desc: t("loyaltyPerService"),
     },
     {
       icon: Gift,
-      title: "Canjea tus puntos",
-      desc: "por descuentos y servicios gratis",
+      title: t("loyaltyRedeemTitle"),
+      desc: t("loyaltyRedeemDesc"),
     },
     {
       icon: Users,
-      title: `${tenant.referral_bonus_pts} puntos`,
-      desc: "por cada amigo que invites",
+      title: `${tenant.referral_bonus_pts} ${t("loyaltyPtsLabel")}`,
+      desc: t("loyaltyPerReferral"),
     },
     {
       icon: Sparkles,
-      title: "30 puntos extra",
-      desc: "al dejar una reseña aprobada",
+      title: `30 ${t("loyaltyPtsLabel")}`,
+      desc: t("loyaltyPerReview"),
     },
   ];
 
@@ -58,16 +61,12 @@ export function LoyaltyBanner({ tenant, locale }: LoyaltyBannerProps) {
         {/* Encabezado */}
         <div className="mb-8 max-w-lg">
           <div className="mb-3 flex items-center gap-2">
-            <Star
-              size={18}
-              fill="currentColor"
-              className="text-[var(--brand-primary)]"
-            />
+            <Star size={18} fill="currentColor" className="text-[var(--brand-primary)]" />
             <span
               className="text-xs font-bold uppercase tracking-widest"
               style={{ color: "var(--brand-primary)" }}
             >
-              Programa de puntos
+              {t("loyaltyProgram")}
             </span>
           </div>
           <h2
@@ -75,13 +74,13 @@ export function LoyaltyBanner({ tenant, locale }: LoyaltyBannerProps) {
             className="text-2xl font-bold"
             style={{ fontFamily: "var(--font-heading)", color: "var(--brand-text)" }}
           >
-            Acumula puntos con cada visita
+            {t("loyaltyTitle")}
           </h2>
           <p
             className="mt-2 text-sm leading-relaxed"
             style={{ color: "var(--brand-text)", opacity: 0.65 }}
           >
-            Cada servicio, compra y referido suma puntos que puedes canjear por descuentos y servicios gratis.
+            {t("loyaltyDescription")}
           </p>
         </div>
 
@@ -95,22 +94,13 @@ export function LoyaltyBanner({ tenant, locale }: LoyaltyBannerProps) {
                   backgroundColor: "color-mix(in srgb, var(--brand-primary) 20%, transparent)",
                 }}
               >
-                <Icon
-                  size={18}
-                  style={{ color: "var(--brand-primary)" }}
-                />
+                <Icon size={18} style={{ color: "var(--brand-primary)" }} />
               </div>
               <div>
-                <p
-                  className="text-sm font-bold leading-tight"
-                  style={{ color: "var(--brand-text)" }}
-                >
+                <p className="text-sm font-bold leading-tight" style={{ color: "var(--brand-text)" }}>
                   {title}
                 </p>
-                <p
-                  className="text-xs leading-tight"
-                  style={{ color: "var(--brand-text)", opacity: 0.55 }}
-                >
+                <p className="text-xs leading-tight" style={{ color: "var(--brand-text)", opacity: 0.55 }}>
                   {desc}
                 </p>
               </div>
@@ -127,7 +117,7 @@ export function LoyaltyBanner({ tenant, locale }: LoyaltyBannerProps) {
             style={{ backgroundColor: "var(--brand-primary)" }}
           >
             <Star size={14} fill="currentColor" />
-            Únete al programa
+            {t("joinProgram")}
           </Link>
 
           <Link
@@ -136,7 +126,7 @@ export function LoyaltyBanner({ tenant, locale }: LoyaltyBannerProps) {
             className="text-sm font-medium transition-opacity hover:opacity-70"
             style={{ color: "var(--brand-text)", opacity: 0.6 }}
           >
-            ¿Ya tienes cuenta? Inicia sesión →
+            {t("loyaltyHaveAccount")}
           </Link>
         </div>
       </div>

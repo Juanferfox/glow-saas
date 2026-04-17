@@ -14,33 +14,34 @@ interface AdminLayoutProps {
  */
 export default async function AdminLayout({ children, params }: AdminLayoutProps) {
   const { locale } = await params;
-  const supabase = await createClient();
 
-  // 1. Verificar sesión
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) redirect(`/${locale}/auth/login?next=/${locale}/admin/agenda`);
+  const isDevMode =
+    !process.env.NEXT_PUBLIC_SUPABASE_URL ||
+    process.env.NEXT_PUBLIC_SUPABASE_URL.includes("xxxx");
 
-  // 2. Cargar tenant
+  // 2. Cargar tenant (siempre necesario)
   const headersList = await headers();
   const tenantSlug = headersList.get("x-tenant-slug");
   const tenant = tenantSlug ? await getTenant(tenantSlug) : null;
   if (!tenant) redirect(`/${locale}`);
 
-  // 3. Verificar rol
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("role")
-    .eq("id", user.id)
-    .eq("tenant_id", tenant.id)
-    .single();
+  if (!isDevMode) {
+    // 1. Verificar sesión (solo en producción con Supabase real)
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) redirect(`/${locale}/auth/login?next=/${locale}/admin/agenda`);
 
-  if (!profile || (profile.role !== "admin" && profile.role !== "recepcionista")) {
-    // Si no es admin, fuera (en modo dev podemos ser más flexibles)
-    const isDevMode =
-      !process.env.NEXT_PUBLIC_SUPABASE_URL ||
-      process.env.NEXT_PUBLIC_SUPABASE_URL.includes("xxxx");
-      
-    if (!isDevMode) redirect(`/${locale}`);
+    // 3. Verificar rol
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("role")
+      .eq("id", user.id)
+      .eq("tenant_id", tenant.id)
+      .single();
+
+    if (!profile || (profile.role !== "admin" && profile.role !== "recepcionista")) {
+      redirect(`/${locale}`);
+    }
   }
 
   return (

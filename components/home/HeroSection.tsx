@@ -1,5 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
+import { getTranslations } from "next-intl/server";
 import type { Tenant } from "@/lib/supabase/types";
 import { getTenantText } from "@/lib/theme";
 import { cn } from "@/lib/utils";
@@ -15,10 +16,18 @@ interface HeroSectionProps {
  * - Logo del tenant si existe
  * - Gradiente radial usando el color primario del tenant
  */
-export function HeroSection({ tenant, locale }: HeroSectionProps) {
+export async function HeroSection({ tenant, locale }: HeroSectionProps) {
+  const t = await getTranslations({ locale, namespace: "home" });
+
   const headline = getTenantText(tenant.hero_headline, locale, tenant.default_locale);
   const subtext  = getTenantText(tenant.hero_subtext,  locale, tenant.default_locale);
   const cta      = getTenantText(tenant.hero_cta,      locale, tenant.default_locale);
+
+  const trustItems = [
+    { value: "100%", label: t("trustPersonalized") },
+    { value: "24/7", label: t("trustBooking") },
+    { value: "★★★★★", label: t("trustClients") },
+  ];
 
   return (
     <section
@@ -96,17 +105,13 @@ export function HeroSection({ tenant, locale }: HeroSectionProps) {
             )}
             style={{ color: "var(--brand-text)" }}
           >
-            Ver servicios
+            {t("viewServices")}
           </Link>
         </div>
 
         {/* Indicadores de confianza */}
         <div className="flex items-center gap-6 pt-2">
-          {[
-            { value: "100%", label: "Personalizado" },
-            { value: "24/7", label: "Reservas online" },
-            { value: "★★★★★", label: "Clientes felices" },
-          ].map(({ value, label }) => (
+          {trustItems.map(({ value, label }) => (
             <div key={label} className="flex flex-col items-center gap-0.5">
               <span
                 className="text-sm font-bold"

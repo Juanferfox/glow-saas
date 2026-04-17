@@ -154,11 +154,17 @@ function AppointmentCard({
 export default async function CitasPage({ params }: PageProps) {
   const { locale } = await params;
 
-  // 1. Autenticación
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) {
-    redirect(`/${locale}/auth/login?next=/${locale}/citas`);
+  // 1. Autenticación (en dev sin Supabase se permite sin sesión)
+  const isDevMode =
+    !process.env.NEXT_PUBLIC_SUPABASE_URL ||
+    process.env.NEXT_PUBLIC_SUPABASE_URL.includes("xxxx");
+
+  if (!isDevMode) {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      redirect(`/${locale}/auth/login?next=/${locale}/citas`);
+    }
   }
 
   // 2. Tenant
