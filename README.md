@@ -702,26 +702,27 @@ spa-saas/
 
 ---
 
-### Sprint 3 — Agendamiento de citas 🔄 EN CURSO
+### Sprint 3 — Agendamiento de citas ✅ COMPLETADO
 
 - [x] Crear tablas: `specialist_schedules`, `appointments` (SQL en `docs/database-schema.sql` ← aplicar en Supabase)
 - [x] `ServiceSelector` con búsqueda y filtro por categoría
 - [x] `CalendarPicker` — selección de fecha con disponibilidad en tiempo real (mobile-first)
 - [x] `TimeSlotGrid` — slots disponibles por especialista (consume `/api/availability`)
 - [x] `BookingConfirmation` — resumen de la cita + notas antes de confirmar
+- [x] `BookingWizard` — orquestador del flujo (4 pasos con indicador de progreso)
 - [x] `POST /api/booking` — crea la cita; dev mode retorna mock con todos los campos
 - [x] `POST /api/booking/[id]/cancel` — cancelación con penalidad de puntos si < 24h
 - [x] `POST /api/booking/cancel` — cancelación legacy (ID en body)
 - [x] `GET /api/availability` — calcula slots libres con `computeAvailableSlots()`
 - [x] Algoritmo de disponibilidad (`lib/booking/slots.ts`) — grilla de 30 min, excluye solapamientos
-- [x] Datos dev: 3 especialistas para `spa-luna`, 2 para `glam-studio` con horarios semanales
+- [x] Datos dev: 3 especialistas para `spa-luna`, 2 para `glam-studio` con horarios semanales + citas de ejemplo
 - [x] Página `/agendar` — wizard de agendamiento completo
-- [x] Panel admin `/admin/agenda` — vista de agenda por día
-- [ ] Email de confirmación con Resend ← **pendiente** (requiere `RESEND_API_KEY` configurada)
-- [ ] Edge Function cron: recordatorios push 24h antes ← **pendiente** (requiere Supabase)
-- [ ] Vista `/citas` — historial de citas del cliente ← **pendiente**
+- [x] Página `/citas` — listado de citas próximas + historial, con `CancelButton` inline
+- [x] Panel admin `/admin/agenda` — vista de agenda por día (por especialista)
+- [x] Email de confirmación con Resend (`POST /api/send-confirmation`) — HTML con branding del tenant; silencioso si no hay `RESEND_API_KEY`
+- [x] Edge Function cron: `supabase/functions/appointment-reminders/` — envía email + push 24h antes (requiere deploy en Supabase)
 
-**Entregable**: El wizard de agendamiento funciona end-to-end en modo dev. Los recordatorios y emails requieren Supabase + Resend configurados.
+**Entregable**: El flujo completo de agendamiento funciona en modo dev. Emails reales activos con `RESEND_API_KEY`. Recordatorios automáticos listos para deploy en Supabase Edge Functions. ✅
 
 ---
 
@@ -822,7 +823,7 @@ spa-saas/
 | Sprint 0 | 3–4 días    | Semana 1     | ✅ Completado  |
 | Sprint 1 | 1 semana    | Semana 2     | ✅ Completado  |
 | Sprint 2 | 1 semana    | Semana 3     | ✅ Completado  |
-| Sprint 3 | 2 semanas   | Semana 5     | 🔄 En curso   |
+| Sprint 3 | 2 semanas   | Semana 5     | ✅ Completado  |
 | Sprint 4 | 1.5 semanas | Semana 6–7   | ✅ Completado  |
 | Sprint 5 | 1.5 semanas | Semana 8–9   | ✅ Completado  |
 | Sprint 6 | 1.5 semanas | Semana 10–11 | ✅ Completado  |
@@ -989,4 +990,4 @@ npx supabase gen types typescript --local > lib/supabase/types.ts
 - **Tenants hardcodeados para dev**: mientras no hay Supabase configurado, `lib/tenant.ts` expone `DEV_TENANTS` con `spa-luna` y `glam-studio` para que todo funcione sin variables de entorno reales.
 - **`/dev/theme-test`**: excluida del routing de locale en `proxy.ts`; accesible directamente sin prefijo `/es/`. Solo disponible en `NODE_ENV !== "production"`.
 
-_Última actualización: **Sprints 0–2 completados · Sprint 3 en curso · `npx tsc --noEmit` = 0 errores · build limpio** — 2026-04-16_
+_Última actualización: **Sprints 0–3 completados · `npx tsc --noEmit` = 0 errores · build limpio (20 rutas)** — 2026-04-16_
