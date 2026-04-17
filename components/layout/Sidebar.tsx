@@ -84,9 +84,15 @@ export function Sidebar() {
 
   const adminNav: NavItem[] = [
     {
+      href: `/${locale}/admin`,
+      icon: BarChart3,
+      label: "Dashboard",
+      id: "sidebar-admin-dashboard",
+    },
+    {
       href: `/${locale}/admin/agenda`,
-      icon: LayoutDashboard,
-      label: "Agenda",
+      icon: CalendarDays,
+      label: t("appointments"),
       id: "sidebar-admin-agenda",
     },
     {

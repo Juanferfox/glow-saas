@@ -3,12 +3,19 @@ import { createClient } from "@/lib/supabase/server";
 import type { Appointment } from "@/lib/supabase/types";
 
 /**
+ * Tipo extendido para citas que incluye datos de joins (UI-friendly).
+ */
+export type AppointmentWithDetails = Appointment & {
+  service_name: Record<string, string>;
+  specialist_name: string;
+};
+
+/**
  * Obtiene las citas del usuario autenticado para un tenant, ordenadas por fecha desc.
- * No usa cache() porque el contenido cambia frecuentemente.
  */
 export async function getMyAppointments(
   tenantId: string
-): Promise<any[]> {
+): Promise<AppointmentWithDetails[]> {
   try {
     const supabase = await createClient();
     const {
@@ -31,7 +38,12 @@ export async function getMyAppointments(
 
     if (error || !data) return [];
     
-    return data.map((a: any) => ({
+    type RawAppointment = Appointment & {
+      service_name: { name: Record<string, string> } | null;
+      specialist_name: { name: string } | null;
+    };
+
+    return (data as unknown as RawAppointment[]).map((a) => ({
       ...a,
       service_name: a.service_name?.name ?? { es: "Servicio" },
       specialist_name: a.specialist_name?.name ?? "Especialista",

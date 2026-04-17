@@ -31,7 +31,7 @@ export async function getInventoryMovements(tenantId: string) {
 
     if (error || !data) return [];
     
-    return (data as (InventoryMovement & { product: { name: Record<string, string> } | null })[]).map((m) => ({
+    return (data as unknown as (InventoryMovement & { product: { name: Record<string, string> } | null })[]).map((m) => ({
       ...m,
       product_name: m.product?.name ?? { es: "Producto" },
     }));

@@ -125,7 +125,7 @@ export function AdminAgendaView({
                           >
                             <p className="text-[10px] font-bold" style={{ color: "var(--brand-primary)" }}>
                               {a.scheduled_at.slice(11, 16)} - {a.ends_at.slice(11, 16)}
-                            </span>
+                            </p>
                             <p className="text-[11px] font-semibold" style={{ color: "var(--brand-text)" }}>
                               {a.client_name ?? "Cliente"}
                             </p>

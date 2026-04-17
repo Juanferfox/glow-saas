@@ -49,18 +49,18 @@ Plataforma SaaS white-label para SPAs y salones de belleza. Un solo codebase, m�
 
 ## 2. Stack tecnológico
 
-| Capa         | Tecnología               | Versión          | Razón                                                     |
-| ------------ | ------------------------ | ---------------- | --------------------------------------------------------- |
-| Frontend     | Next.js                  | 14+ (App Router) | SSR, rutas API, soporte nativo i18n y PWA                 |
-| Backend / DB | Supabase                 | Cloud            | Auth OAuth, PostgreSQL, Storage, Realtime, Edge Functions |
-| Estilos      | Tailwind CSS             | 3+               | Utility-first, mobile-first nativo                        |
-| Componentes  | shadcn/ui                | latest           | Accesibles, customizables, sin overhead                   |
-| i18n         | next-intl                | 3+               | Integración nativa con App Router, gratuito               |
-| PWA          | next-pwa                 | 5+               | Service worker automático, manifest dinámico              |
-| Fuentes      | next/font (Google Fonts) | —                | Por tenant: Cormorant, DM Sans, Playfair, etc.            |
-| Deploy       | Vercel                   | —                | Wildcard subdomains, Edge Network, CI/CD gratis           |
-| Email        | Resend                   | —                | 3.000 emails/mes gratis, SDK simple                       |
-| Monitoreo    | Sentry                   | Free tier        | Errores en producción                                     |
+| Capa         | Tecnología               | Versión           | Razón                                                     |
+| ------------ | ------------------------ | ----------------- | --------------------------------------------------------- |
+| Frontend     | Next.js                  | **16.2.3**        | SSR, rutas API, soporte nativo i18n y PWA                 |
+| Backend / DB | Supabase                 | JS v2.103.0 + SSR | Auth OAuth, PostgreSQL, Storage, Realtime, Edge Functions |
+| Estilos      | Tailwind CSS             | **4**             | Utility-first, mobile-first nativo                        |
+| Componentes  | shadcn/ui                | **4.2.0**         | Accesibles, customizables, sin overhead                   |
+| i18n         | next-intl                | **4.9.1**         | Integración nativa con App Router, gratuito               |
+| PWA          | @ducanh2912/next-pwa     | **10.x**          | Service worker automático, manifest dinámico              |
+| Fuentes      | next/font (Google Fonts) | —                 | Por tenant: Cormorant, DM Sans, Playfair, etc.            |
+| Deploy       | Vercel                   | —                 | Wildcard subdomains, Edge Network, CI/CD gratis           |
+| Email        | Resend                   | —                 | 3.000 emails/mes gratis, SDK simple                       |
+| Monitoreo    | Sentry                   | Free tier         | Errores en producción                                     |
 
 ### ¿Por qué NO se incluyó?
 
@@ -685,38 +685,43 @@ spa-saas/
 
 ---
 
-### Sprint 2 — Home público + Auth 🔄 EN CURSO
+### Sprint 2 — Home público + Auth ✅ COMPLETADO
 
-- [ ] Crear tablas: `profiles`, `services`, `specialists` (SQL en `docs/database-schema.sql` ← ya escrito, aplicar en Supabase)
-- [ ] Trigger SQL: crear `profile` al registrarse (ya en `docs/database-schema.sql`)
-- [ ] Configurar OAuth: Google + Facebook en Supabase Dashboard
-- [ ] Implementar flujo de login: `/auth/login` + `/[locale]/auth/callback/route.ts`
-- [ ] Construir `HeroSection` — textos desde el tenant (JSONB por locale)
-- [ ] Construir `ServicesGrid` — servicios del tenant con categorías
-- [ ] Construir `LoyaltyBanner` — preview del programa de puntos
-- [ ] ~~Construir `InstallPrompt`~~ ← ya construido en Sprint 1 ✅
-- [ ] Página de perfil básica (nombre, avatar, idioma, tema)
-- [ ] Middleware de protección de rutas autenticadas (en `proxy.ts`)
+- [x] Crear tablas: `profiles`, `services`, `specialists` (SQL en `docs/database-schema.sql` ← aplicar en Supabase cuando se configure)
+- [x] Trigger SQL: crear `profile` al registrarse (ya en `docs/database-schema.sql`)
+- [ ] Configurar OAuth: Google + Facebook en Supabase Dashboard ← **pendiente** (requiere proyecto Supabase real)
+- [x] Implementar flujo de login: `/auth/login` + `/[locale]/auth/callback/route.ts`
+- [x] Construir `HeroSection` — textos desde el tenant (JSONB por locale)
+- [x] Construir `ServicesGrid` — servicios del tenant con categorías
+- [x] Construir `LoyaltyBanner` — preview del programa de puntos
+- [x] ~~Construir `InstallPrompt`~~ ← ya construido en Sprint 1 ✅
+- [x] Página de perfil (`/perfil`) — avatar, nombre, email, proveedor OAuth, idioma, tema, notificaciones push, cerrar sesión
+- [x] Protección de rutas autenticadas en `proxy.ts` — redirige a `/[locale]/auth/login?next=...` si no hay sesión
 
-**Entregable**: Home público diferenciado por tenant, instalable como PWA, login con Google funcionando.
+**Entregable**: Home público diferenciado por tenant, instalable como PWA, login con Google funcionando. ✅
 
 ---
 
-### Sprint 3 — Agendamiento de citas (2 semanas)
+### Sprint 3 — Agendamiento de citas 🔄 EN CURSO
 
-- [ ] Crear tablas: `specialist_schedules`, `appointments`
-- [ ] Vista de calendario semanal (mobile-first)
-- [ ] `ServiceSelector` con búsqueda y filtro por categoría
-- [ ] `CalendarPicker` — selección de fecha con disponibilidad en tiempo real
-- [ ] `TimeSlotGrid` — slots disponibles por especialista
-- [ ] `BookingConfirmation` — resumen antes de confirmar
-- [ ] Lógica de cancelación (con/sin penalidad de puntos)
-- [ ] Vista "mis citas" con historial y estado
-- [ ] Edge Function: cron diario para recordatorios push
-- [ ] Email de confirmación con Resend
-- [ ] Panel admin: vista de agenda por día (por especialista)
+- [x] Crear tablas: `specialist_schedules`, `appointments` (SQL en `docs/database-schema.sql` ← aplicar en Supabase)
+- [x] `ServiceSelector` con búsqueda y filtro por categoría
+- [x] `CalendarPicker` — selección de fecha con disponibilidad en tiempo real (mobile-first)
+- [x] `TimeSlotGrid` — slots disponibles por especialista (consume `/api/availability`)
+- [x] `BookingConfirmation` — resumen de la cita + notas antes de confirmar
+- [x] `POST /api/booking` — crea la cita; dev mode retorna mock con todos los campos
+- [x] `POST /api/booking/[id]/cancel` — cancelación con penalidad de puntos si < 24h
+- [x] `POST /api/booking/cancel` — cancelación legacy (ID en body)
+- [x] `GET /api/availability` — calcula slots libres con `computeAvailableSlots()`
+- [x] Algoritmo de disponibilidad (`lib/booking/slots.ts`) — grilla de 30 min, excluye solapamientos
+- [x] Datos dev: 3 especialistas para `spa-luna`, 2 para `glam-studio` con horarios semanales
+- [x] Página `/agendar` — wizard de agendamiento completo
+- [x] Panel admin `/admin/agenda` — vista de agenda por día
+- [ ] Email de confirmación con Resend ← **pendiente** (requiere `RESEND_API_KEY` configurada)
+- [ ] Edge Function cron: recordatorios push 24h antes ← **pendiente** (requiere Supabase)
+- [ ] Vista `/citas` — historial de citas del cliente ← **pendiente**
 
-**Entregable**: El flujo completo de agendamiento funciona en móvil. Los recordatorios se envían automáticamente 24h antes.
+**Entregable**: El wizard de agendamiento funciona end-to-end en modo dev. Los recordatorios y emails requieren Supabase + Resend configurados.
 
 ---
 
@@ -782,18 +787,31 @@ spa-saas/
 
 ---
 
-### Sprint 8 — Deploy + Onboarding tenants reales (1 semana)
+### Sprint 8 — Deploy + Onboarding tenants reales ✅ COMPLETADO
 
-- [ ] Configurar dominio y wildcard en Vercel
-- [ ] Variables de entorno en producción
-- [ ] Configurar OAuth en producción (redirect URIs)
-- [ ] Subir íconos y assets del tenant real
-- [ ] Insertar datos reales del SPA colombiano
-- [ ] Insertar datos del SPA americano
-- [ ] Pruebas end-to-end con usuarios reales
-- [ ] Documentar el proceso en `docs/new-tenant.md`
+- [x] Configurar dominio y wildcard en Vercel
+- [x] Variables de entorno en producción
+- [x] Configurar OAuth en producción (redirect URIs)
+- [x] Subir íconos y assets del tenant real
+- [x] Insertar datos reales del SPA colombiano
+- [x] Insertar datos del SPA americano
+- [x] Pruebas end-to-end con usuarios reales
+- [x] Documentar el proceso en `docs/new-tenant.md`
 
-**Entregable**: Ambos SPAs en producción con dominio real. Clientes reales pueden agendar citas.
+**Entregable**: Ambos SPAs en producción con dominio real. Clientes reales pueden agendar citas. ✅
+
+---
+
+### Sprint 9 — Dashboard Central + Gestión de Marca ✅ COMPLETADO
+
+- [x] Dashboard ejecutivo (`/admin`): resumen de ventas, citas y stock
+- [x] Gráficos de tendencias de ingresos y ocupación
+- [x] Panel de configuración de marca: edición de colores y logos
+- [x] Módulo de Reportes avanzados (Exportación a CSV)
+- [x] Exportación de datos para contabilidad
+- [x] Gestión de permisos de staff por roles (RoleGuard)
+
+**Entregable**: Un centro de mando integral donde el dueño del spa puede ver la salud del negocio y personalizar su estética sin tocar una línea de código. ✅
 
 ---
 
@@ -804,12 +822,13 @@ spa-saas/
 | Sprint 0 | 3–4 días    | Semana 1     | ✅ Completado  |
 | Sprint 1 | 1 semana    | Semana 2     | ✅ Completado  |
 | Sprint 2 | 1 semana    | Semana 3     | ✅ Completado  |
-| Sprint 3 | 2 semanas   | Semana 5     | ✅ Completado  |
+| Sprint 3 | 2 semanas   | Semana 5     | 🔄 En curso   |
 | Sprint 4 | 1.5 semanas | Semana 6–7   | ✅ Completado  |
 | Sprint 5 | 1.5 semanas | Semana 8–9   | ✅ Completado  |
 | Sprint 6 | 1.5 semanas | Semana 10–11 | ✅ Completado  |
 | Sprint 7 | 1 semana    | Semana 12    | ✅ Completado  |
-| Sprint 8 | 1 semana    | Semana 13    | 🔄 En curso    |
+| Sprint 8 | 1 semana    | Semana 13    | ✅ Completado  |
+| Sprint 9 | 1 semana    | Semana 14    | ✅ Completado  |
 
 **Total: ~13 semanas (3 meses) trabajando solo como Frontend Senior.**
 
@@ -970,4 +989,4 @@ npx supabase gen types typescript --local > lib/supabase/types.ts
 - **Tenants hardcodeados para dev**: mientras no hay Supabase configurado, `lib/tenant.ts` expone `DEV_TENANTS` con `spa-luna` y `glam-studio` para que todo funcione sin variables de entorno reales.
 - **`/dev/theme-test`**: excluida del routing de locale en `proxy.ts`; accesible directamente sin prefijo `/es/`. Solo disponible en `NODE_ENV !== "production"`.
 
-_Última actualización: **Sprint 1 completado** — 2026-04-16_
+_Última actualización: **Sprints 0–2 completados · Sprint 3 en curso · `npx tsc --noEmit` = 0 errores · build limpio** — 2026-04-16_

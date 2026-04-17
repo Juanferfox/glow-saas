@@ -6,20 +6,16 @@ export type Json =
   | { [key: string]: Json | undefined }
   | Json[];
 
-// ─── Tenant ──────────────────────────────────────────────────────────────────
+// ─── Domain interfaces (usadas en todo el proyecto) ────────────────────────
 
-export interface Tenant {
+export type Tenant = {
   id: string;
   slug: string;
   name: string;
-
-  // Localización
   default_locale: string;
   active_locales: string[];
   currency: string;
   timezone: string;
-
-  // Branding
   logo_url: string | null;
   brand_color_primary: string;
   brand_color_bg: string;
@@ -33,13 +29,9 @@ export interface Tenant {
   brand_font_heading: string;
   brand_font_body: string;
   brand_radius: string;
-
-  // Textos del home (JSONB por locale)
   hero_headline: Record<string, string>;
   hero_subtext: Record<string, string>;
   hero_cta: Record<string, string>;
-
-  // Feature flags
   feature_store: boolean;
   feature_inventory: boolean;
   feature_loyalty: boolean;
@@ -48,22 +40,16 @@ export interface Tenant {
   feature_solar: boolean;
   feature_sales_history: boolean;
   feature_whatsapp_bot: boolean;
-
-  // Configuración de fidelización
   points_per_service: number;
   points_per_purchase: number;
   referral_bonus_pts: number;
   cancellation_penalty: number;
-
-  // Plan
   plan: "starter" | "pro" | "premium";
   active: boolean;
   created_at: string;
 }
 
-// ─── Profile ─────────────────────────────────────────────────────────────────
-
-export interface Profile {
+export type Profile = {
   id: string;
   tenant_id: string;
   full_name: string | null;
@@ -76,47 +62,42 @@ export interface Profile {
   preferred_locale: string;
   notifications_promo: boolean;
   notifications_tips: boolean;
+  push_subscription: Json | null;
   created_at: string;
 }
 
-// ─── Specialist ──────────────────────────────────────────────────────────────
-
-export interface Specialist {
+export type Specialist = {
   id: string;
   tenant_id: string;
   profile_id: string | null;
   name: string;
   bio: Record<string, string> | null;
   avatar_url: string | null;
-  services: string[]; // service IDs
+  services: string[];
   active: boolean;
   created_at: string;
 }
 
-// ─── SpecialistSchedule ───────────────────────────────────────────────────────
-
-export interface SpecialistSchedule {
+export type SpecialistSchedule = {
   id: string;
   specialist_id: string;
   tenant_id: string;
-  day_of_week: number; // 0=domingo … 6=sábado
-  start_time: string;  // "HH:MM:SS"
-  end_time: string;    // "HH:MM:SS"
+  day_of_week: number;
+  start_time: string;
+  end_time: string;
   is_working: boolean;
 }
 
-// ─── Appointment ─────────────────────────────────────────────────────────────
-
 export type AppointmentStatus = "pending" | "confirmed" | "completed" | "cancelled";
 
-export interface Appointment {
+export type Appointment = {
   id: string;
   tenant_id: string;
   client_id: string;
   specialist_id: string | null;
   service_id: string;
-  scheduled_at: string; // ISO
-  ends_at: string;      // ISO
+  scheduled_at: string;
+  ends_at: string;
   status: AppointmentStatus;
   notes: string | null;
   points_earned: number;
@@ -125,16 +106,119 @@ export interface Appointment {
   created_at: string;
 }
 
-// ─── Slot disponible (calculado, no en DB) ────────────────────────────────────
-
-export interface AvailableSlot {
-  time: string;          // "HH:MM" — hora local del tenant
+export type AvailableSlot = {
+  time: string;
   specialist_id: string;
   specialist_name: string;
   specialist_avatar: string | null;
 }
 
-// ─── Feature flags helpers ────────────────────────────────────────────────────
+export type Product = {
+  id: string;
+  tenant_id: string;
+  name: Record<string, string>;
+  description: Record<string, string> | null;
+  price: number;
+  stock: number;
+  /** En la DB puede ser low_stock_threshold; alias para compatibilidad local */
+  stock_alert_threshold: number;
+  category: string | null;
+  image_url: string | null;
+  active: boolean;
+  sort_order: number;
+  created_at: string;
+}
+
+export type Service = {
+  id: string;
+  tenant_id: string;
+  name: Record<string, string>;
+  description: Record<string, string> | null;
+  duration_min: number;
+  price: number;
+  category: string | null;
+  image_url: string | null;
+  sort_order: number;
+  active: boolean;
+  created_at: string;
+}
+
+export type SystemNotification = {
+  id: string;
+  tenant_id: string;
+  user_id: string;
+  type: "appointment" | "inventory" | "marketing" | "system";
+  title: Record<string, string>;
+  content: Record<string, string>;
+  read: boolean;
+  created_at: string;
+}
+
+export type OrderStatus = "pending" | "confirmed" | "delivered" | "cancelled";
+
+export type Order = {
+  id: string;
+  tenant_id: string;
+  client_id: string;
+  total: number;
+  points_used: number;
+  status: OrderStatus;
+  created_at: string;
+}
+
+export type OrderItem = {
+  id: string;
+  order_id: string;
+  product_id: string;
+  quantity: number;
+  unit_price: number;
+}
+
+export type InventoryMovement = {
+  id: string;
+  tenant_id: string;
+  product_id: string;
+  type: "entrada" | "salida" | "ajuste";
+  quantity: number;
+  reason: string | null;
+  created_at: string;
+}
+
+export type LoyaltyTransaction = {
+  id: string;
+  tenant_id: string;
+  client_id: string;
+  type: "ganados" | "canjeados";
+  amount: number;
+  reason: Record<string, string>;
+  reference_id: string | null;
+  created_at: string;
+}
+
+export type Coupon = {
+  id: string;
+  tenant_id: string;
+  code: string;
+  discount_type: "percentage" | "fixed";
+  amount: number;
+  min_purchase: number;
+  expires_at: string | null;
+  active: boolean;
+  created_at: string;
+}
+
+export type Review = {
+  id: string;
+  tenant_id: string;
+  client_id: string;
+  appointment_id: string | null;
+  rating: number;
+  comment: string | null;
+  status: "pending" | "approved" | "rejected";
+  admin_reply: string | null;
+  points_awarded: boolean;
+  created_at: string;
+}
 
 export type FeatureFlag = keyof Pick<
   Tenant,
@@ -148,25 +232,34 @@ export type FeatureFlag = keyof Pick<
   | "feature_whatsapp_bot"
 >;
 
-// ─── Database ─────────────────────────────────────────────────────────────────
+// ─── Database (formato requerido por Supabase JS v2) ──────────────────────
+//
+// IMPORTANTE: usar `type` (no `interface`) y Functions vacío.
+// Supabase JS v2 evalúa `Database["public"] extends GenericSchema` en un
+// conditional type genérico. Si la evaluación falla (p.ej. Returns: void),
+// el Schema cae a Record<string, unknown> y TODO vuelve `never`.
+// Los RPCs se llaman con cast explícito `as any` donde sea necesario.
 
-export interface Database {
+export type Database = {
   public: {
     Tables: {
       tenants: {
         Row: Tenant;
         Insert: Partial<Tenant> & { slug: string; name: string };
         Update: Partial<Tenant>;
+        Relationships: [];
       };
       profiles: {
         Row: Profile;
         Insert: Partial<Profile> & { id: string; tenant_id: string };
         Update: Partial<Profile>;
+        Relationships: [];
       };
       specialists: {
         Row: Specialist;
         Insert: Partial<Specialist> & { tenant_id: string; name: string };
         Update: Partial<Specialist>;
+        Relationships: [];
       };
       specialist_schedules: {
         Row: SpecialistSchedule;
@@ -178,18 +271,89 @@ export interface Database {
           end_time: string;
         };
         Update: Partial<SpecialistSchedule>;
+        Relationships: [];
       };
       appointments: {
         Row: Appointment;
-        Insert: Partial<Appointment> & {
-          tenant_id: string;
-          client_id: string;
-          service_id: string;
-          scheduled_at: string;
-          ends_at: string;
-        };
+        Insert: Omit<Appointment, "id" | "created_at"> & { id?: string; created_at?: string };
         Update: Partial<Appointment>;
+        Relationships: [];
       };
+      products: {
+        Row: Product;
+        Insert: Partial<Product> & { tenant_id: string; name: Record<string, string>; price: number };
+        Update: Partial<Product>;
+        Relationships: [];
+      };
+      orders: {
+        Row: Order;
+        Insert: Omit<Order, "id" | "created_at"> & { id?: string; created_at?: string };
+        Update: Partial<Order>;
+        Relationships: [];
+      };
+      order_items: {
+        Row: OrderItem;
+        Insert: Omit<OrderItem, "id"> & { id?: string };
+        Update: Partial<OrderItem>;
+        Relationships: [];
+      };
+      inventory_movements: {
+        Row: InventoryMovement;
+        Insert: Omit<InventoryMovement, "id" | "created_at"> & { id?: string; created_at?: string };
+        Update: Partial<InventoryMovement>;
+        Relationships: [];
+      };
+      loyalty_transactions: {
+        Row: LoyaltyTransaction;
+        Insert: Omit<LoyaltyTransaction, "id" | "created_at"> & { id?: string; created_at?: string };
+        Update: Partial<LoyaltyTransaction>;
+        Relationships: [];
+      };
+      // alias usado en legacy code (point_movements)
+      point_movements: {
+        Row: LoyaltyTransaction;
+        Insert: Omit<LoyaltyTransaction, "id" | "created_at"> & { id?: string; created_at?: string };
+        Update: Partial<LoyaltyTransaction>;
+        Relationships: [];
+      };
+      coupons: {
+        Row: Coupon;
+        Insert: Partial<Coupon> & { tenant_id: string; code: string; amount: number };
+        Update: Partial<Coupon>;
+        Relationships: [];
+      };
+      reviews: {
+        Row: Review;
+        Insert: Partial<Review> & { tenant_id: string; client_id: string; rating: number };
+        Update: Partial<Review>;
+        Relationships: [];
+      };
+      services: {
+        Row: Service;
+        Insert: Partial<Service> & { tenant_id: string; name: Record<string, string>; price: number; duration_min: number };
+        Update: Partial<Service>;
+        Relationships: [];
+      };
+      notifications: {
+        Row: SystemNotification;
+        Insert: Partial<SystemNotification> & { tenant_id: string; user_id: string; type: SystemNotification["type"]; title: Record<string, string>; content: Record<string, string> };
+        Update: Partial<SystemNotification>;
+        Relationships: [];
+      };
+    };
+    Views: {
+      [_ in never]: never;
+    };
+    // Funciones/RPCs: mantener vacío para que Database["public"] satisfaga
+    // GenericSchema. Los RPCs se invocan con supabase.rpc("fn", args as any).
+    Functions: {
+      [_ in never]: never;
+    };
+    Enums: {
+      [_ in never]: never;
+    };
+    CompositeTypes: {
+      [_ in never]: never;
     };
   };
 }

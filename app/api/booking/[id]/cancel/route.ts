@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { getTenant } from "@/lib/tenant";
+import type { AppointmentStatus } from "@/lib/supabase/types";
 
 interface CancelBody {
   tenantSlug: string;
@@ -10,7 +11,7 @@ interface CancelBody {
 /**
  * POST /api/booking/[id]/cancel
  * Cancela una cita del usuario autenticado.
- * Aplica penalidad de puntos si la cita es en menos de 24h (configurable por tenant).
+ * Aplica penalidad de puntos si la cita es en menos de 24h.
  */
 export async function POST(
   request: NextRequest,
@@ -19,7 +20,6 @@ export async function POST(
   const { id: appointmentId } = await params;
   const supabase = await createClient();
 
-  // Verificar sesión
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -40,7 +40,6 @@ export async function POST(
     return NextResponse.json({ error: "Tenant no encontrado" }, { status: 404 });
   }
 
-  // En modo dev devolver éxito simulado
   const isDevMode =
     !process.env.NEXT_PUBLIC_SUPABASE_URL ||
     process.env.NEXT_PUBLIC_SUPABASE_URL.includes("xxxx");
@@ -65,20 +64,18 @@ export async function POST(
     return NextResponse.json({ error: "Sin permiso para cancelar esta cita" }, { status: 403 });
   }
 
-  if (appt.status === "cancelled") {
+  if ((appt.status as AppointmentStatus) === "cancelled") {
     return NextResponse.json({ error: "La cita ya está cancelada" }, { status: 409 });
   }
 
-  // Calcular penalidad: si faltan menos de 24h y hay puntos acreditados
   const hoursUntil = (new Date(appt.scheduled_at).getTime() - Date.now()) / 3_600_000;
   const applyPenalty = hoursUntil < 24 && appt.points_earned > 0;
   const penaltyPts   = applyPenalty ? tenant.cancellation_penalty : 0;
 
-  // Actualizar cita
   const { error: updateErr } = await supabase
     .from("appointments")
     .update({
-      status:        "cancelled",
+      status:        "cancelled" as AppointmentStatus,
       cancelled_at:  new Date().toISOString(),
       cancel_reason: reason ?? null,
     })
@@ -88,13 +85,17 @@ export async function POST(
     return NextResponse.json({ error: "No se pudo cancelar la cita" }, { status: 500 });
   }
 
-  // Aplicar penalidad de puntos al profile si corresponde
   if (applyPenalty && penaltyPts > 0) {
-    await supabase.rpc("deduct_loyalty_points", {
-      p_user_id: user.id,
-      p_tenant_id: tenant.id,
-      p_points: penaltyPts,
-    }).catch(() => {}); // RPC puede no existir aún
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      await (supabase as any).rpc("deduct_loyalty_points", {
+        p_user_id:   user.id,
+        p_tenant_id: tenant.id,
+        p_points:    penaltyPts,
+      });
+    } catch {
+      // RPC puede no existir aún — no bloqueamos la cancelación
+    }
   }
 
   return NextResponse.json({ ok: true, penalty: applyPenalty, penaltyPts }, { status: 200 });

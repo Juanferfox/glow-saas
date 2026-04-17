@@ -26,7 +26,7 @@ export async function proxy(request: NextRequest) {
   // 1. Detectar tenant desde subdominio o cookies (usando la utilidad refinada)
   // Intentar primero de query param (solo para dev facilitado)
   const url = new URL(request.url);
-  let tenantSlug = url.searchParams.get("tenant") || getTenantSlug(hostname);
+  const tenantSlug = url.searchParams.get("tenant") || getTenantSlug(hostname);
 
   // 2. Rutas estáticas e internas: pasar directo
   const isExcluded =

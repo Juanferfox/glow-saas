@@ -2,13 +2,14 @@ import { NextResponse, type NextRequest } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { getTenant } from "@/lib/tenant";
 import { getServices } from "@/lib/data/services";
+import type { AppointmentStatus } from "@/lib/supabase/types";
 
 interface BookingBody {
   tenantSlug: string;
   serviceId: string;
   specialistId: string;
-  date: string;        // "YYYY-MM-DD"
-  time: string;        // "HH:MM"
+  date: string;   // "YYYY-MM-DD"
+  time: string;   // "HH:MM"
   notes?: string;
 }
 
@@ -19,7 +20,6 @@ interface BookingBody {
 export async function POST(request: NextRequest) {
   const supabase = await createClient();
 
-  // Verificar sesión
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -50,30 +50,28 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Servicio no encontrado" }, { status: 404 });
   }
 
-  // Construir timestamps
   const scheduledAt = new Date(`${date}T${time}:00`);
   const endsAt      = new Date(scheduledAt.getTime() + service.duration_min * 60_000);
 
-  // En modo dev devolver una cita simulada sin tocar Supabase
   const isDevMode =
     !process.env.NEXT_PUBLIC_SUPABASE_URL ||
     process.env.NEXT_PUBLIC_SUPABASE_URL.includes("xxxx");
 
   if (isDevMode) {
     const mockAppointment = {
-      id: `mock-${Date.now()}`,
-      tenant_id: tenant.id,
-      client_id: user.id,
-      specialist_id: specialistId,
-      service_id: serviceId,
-      scheduled_at: scheduledAt.toISOString(),
-      ends_at: endsAt.toISOString(),
-      status: "confirmed",
-      notes: notes ?? null,
-      points_earned: tenant.points_per_service,
-      cancelled_at: null,
-      cancel_reason: null,
-      created_at: new Date().toISOString(),
+      id:             `mock-${Date.now()}`,
+      tenant_id:      tenant.id,
+      client_id:      user.id,
+      specialist_id:  specialistId,
+      service_id:     serviceId,
+      scheduled_at:   scheduledAt.toISOString(),
+      ends_at:        endsAt.toISOString(),
+      status:         "confirmed" as AppointmentStatus,
+      notes:          notes ?? null,
+      points_earned:  tenant.points_per_service,
+      cancelled_at:   null,
+      cancel_reason:  null,
+      created_at:     new Date().toISOString(),
     };
     return NextResponse.json({ appointment: mockAppointment }, { status: 201 });
   }
@@ -96,32 +94,33 @@ export async function POST(request: NextRequest) {
   const { data, error } = await supabase
     .from("appointments")
     .insert({
-      tenant_id:     tenant.id,
-      client_id:     user.id,
+      tenant_id:    tenant.id,
+      client_id:    user.id,
       specialist_id: specialistId,
-      service_id:    serviceId,
-      scheduled_at:  scheduledAt.toISOString(),
-      ends_at:       endsAt.toISOString(),
-      status:        "confirmed",
+      service_id:   serviceId,
+      scheduled_at: scheduledAt.toISOString(),
+      ends_at:      endsAt.toISOString(),
+      status:        "confirmed" as AppointmentStatus,
       notes:         notes ?? null,
       points_earned: tenant.points_per_service,
+      cancelled_at:  null,
+      cancel_reason: null,
     })
     .select()
     .single();
 
-  if (error) {
+  if (error || !data) {
     console.error("[booking] Error al crear cita:", error);
     return NextResponse.json({ error: "No se pudo crear la cita" }, { status: 500 });
   }
 
-  // Disparar email de confirmación en background (no bloqueamos la respuesta)
+  // Email de confirmación en background (fire-and-forget)
   try {
-    const origin = request.nextUrl.origin;
-    fetch(`${origin}/api/send-confirmation`, {
-      method: "POST",
+    fetch(`${request.nextUrl.origin}/api/send-confirmation`, {
+      method:  "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ appointmentId: data.id, tenantSlug }),
-    }).catch(() => {}); // fire-and-forget
+      body:    JSON.stringify({ appointmentId: data.id, tenantSlug }),
+    }).catch(() => {});
   } catch {}
 
   return NextResponse.json({ appointment: data }, { status: 201 });
