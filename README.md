@@ -1,140 +1,141 @@
-# spa-saas
+# GlowOS — SaaS para Spas y Centros de Bienestar
 
-Plataforma SaaS white-label para SPAs y salones de belleza. Un solo codebase, múltiples clientes, cada uno con su propia identidad visual, idioma, dark mode y módulos activados según su plan.
+Plataforma multi-tenant white-label para SPAs y salones de belleza. Un solo codebase, múltiples clientes, cada uno con su propia identidad visual, idioma, módulos y precios según su plan.
 
 ---
 
 ## Índice
 
-1. [Visión del producto](#1-visión-del-producto)
+1. [Clientes activos](#1-clientes-activos)
 2. [Stack tecnológico](#2-stack-tecnológico)
 3. [Arquitectura general](#3-arquitectura-general)
 4. [Modelo de datos](#4-modelo-de-datos)
 5. [Sistema de theming white-label](#5-sistema-de-theming-white-label)
-6. [PWA y mobile-first](#6-pwa-y-mobile-first)
-7. [Internacionalización (i18n)](#7-internacionalización-i18n)
-8. [Dark mode](#8-dark-mode)
-9. [Módulos del sistema](#9-módulos-del-sistema)
-10. [Estructura de archivos](#10-estructura-de-archivos)
-11. [Roadmap de desarrollo (sprints)](#11-roadmap-de-desarrollo-sprints)
-12. [Guía de onboarding de un nuevo tenant](#12-guía-de-onboarding-de-un-nuevo-tenant)
-13. [Planes y precios](#13-planes-y-precios)
-14. [Variables de entorno](#14-variables-de-entorno)
-15. [Comandos útiles](#15-comandos-útiles)
+6. [Roles y permisos](#6-roles-y-permisos)
+7. [Calendario y sincronización](#7-calendario-y-sincronización)
+8. [PWA y mobile-first](#8-pwa-y-mobile-first)
+9. [Internacionalización (i18n)](#9-internacionalización-i18n)
+10. [Dark mode](#10-dark-mode)
+11. [Módulos del sistema](#11-módulos-del-sistema)
+12. [Estructura de archivos](#12-estructura-de-archivos)
+13. [Roadmap de desarrollo (sprints)](#13-roadmap-de-desarrollo-sprints)
+14. [Onboarding de un nuevo tenant](#14-onboarding-de-un-nuevo-tenant)
+15. [Planes y precios](#15-planes-y-precios)
+16. [Variables de entorno](#16-variables-de-entorno)
+17. [Comandos útiles](#17-comandos-útiles)
+18. [Notas técnicas](#18-notas-técnicas)
 
 ---
 
-## 1. Visión del producto
+## 1. Clientes activos
 
-`spa-saas` es una plataforma multi-tenant que permite a SPAs y salones de belleza tener su propia aplicación web completamente personalizada — con su logo, colores, fuentes, idioma y módulos — sin que cada cliente requiera un desarrollo desde cero.
+| Tenant | Nombre | País | Moneda | Plan | Estado |
+|---|---|---|---|---|---|
+| `spa-luna` | Spa Luna | 🇨🇴 Colombia | COP | Pro | Dev — tenant de prueba |
+| `channel-spa` | Channel Spa | 🇨🇴 Colombia | COP | Pro | **Activo** — servicios en carga |
+| `gio-spa` | Gio Spa | 🇺🇸 USA | USD | Starter | **Activo** — servicios en carga |
+| `glam-studio` | Glam Studio | 🇺🇸 USA | USD | Pro | Dev — tenant de prueba |
 
-### Clientes actuales
+> **Logos pendientes**: se instalarán cuando cada cliente los envíe. Basta con actualizar `logo_url` en la tabla `tenants`.  
+> **Servicios**: son placeholder. Se reemplazan al recibir la lista real de cada spa.
 
-| Tenant        | País        | Plan    | Notas                      |
-| ------------- | ----------- | ------- | -------------------------- |
-| `spa-luna`    | 🇨🇴 Colombia | Premium | Incluye bronceo solar      |
-| `glam-studio` | 🇺🇸 EE.UU.   | Pro     | Sin bronceo solar, EN + ES |
+### URLs de prueba en dev
 
-### Propuesta de valor
-
-- El cliente siente que la app es 100% suya (logo, colores, dominio propio)
-- El desarrollador construye una vez y despliega para N clientes
-- Cada cliente activa solo los módulos que necesita
-- Instalable como app nativa (PWA) desde el celular
-- Funciona offline (citas próximas, historial básico)
-- Multi-idioma por tenant (hasta 5 idiomas)
-- Dark mode con 3 modos: sistema, claro, oscuro
+```
+http://localhost:3000?tenant=channel-spa   → Channel Spa (CO)
+http://localhost:3000?tenant=gio-spa       → Gio Spa (USA)
+http://localhost:3000?tenant=spa-luna      → Spa Luna (CO)
+http://localhost:3000?tenant=glam-studio   → Glam Studio (USA, EN+ES)
+```
 
 ---
 
 ## 2. Stack tecnológico
 
-| Capa         | Tecnología               | Versión           | Razón                                                     |
-| ------------ | ------------------------ | ----------------- | --------------------------------------------------------- |
-| Frontend     | Next.js                  | **16.2.3**        | SSR, rutas API, soporte nativo i18n y PWA                 |
-| Backend / DB | Supabase                 | JS v2.103.0 + SSR | Auth OAuth, PostgreSQL, Storage, Realtime, Edge Functions |
-| Estilos      | Tailwind CSS             | **4**             | Utility-first, mobile-first nativo                        |
-| Componentes  | shadcn/ui                | **4.2.0**         | Accesibles, customizables, sin overhead                   |
-| i18n         | next-intl                | **4.9.1**         | Integración nativa con App Router, gratuito               |
-| PWA          | @ducanh2912/next-pwa     | **10.x**          | Service worker automático, manifest dinámico              |
-| Fuentes      | next/font (Google Fonts) | —                 | Por tenant: Cormorant, DM Sans, Playfair, etc.            |
-| Deploy       | Vercel                   | —                 | Wildcard subdomains, Edge Network, CI/CD gratis           |
-| Email        | Resend                   | —                 | 3.000 emails/mes gratis, SDK simple                       |
-| Monitoreo    | Sentry                   | Free tier         | Errores en producción                                     |
+| Capa | Tecnología | Versión | Razón |
+|---|---|---|---|
+| Frontend | Next.js | **16.2.3** | SSR, App Router, API routes, i18n nativo |
+| Base de datos | Supabase | JS v2 + SSR | Auth OAuth, PostgreSQL + RLS, Storage, Edge Functions |
+| Estilos | Tailwind CSS | **4** | Utility-first, mobile-first, sin configuración extra |
+| Componentes | shadcn/ui | **4.2.0** | Accesibles, customizables, compatible con Tailwind 4 |
+| i18n | next-intl | **4.9.1** | App Router nativo, Server Components, pluralización |
+| PWA | @ducanh2912/next-pwa | **10.x** | Service worker automático, manifest dinámico por tenant |
+| Fuentes | next/font (Google Fonts) | — | Playfair, DM Sans, Cormorant, Lato — por tenant |
+| Email | Resend | SDK v6.12.0 | 3.000 emails/mes gratis, SDK simple, HTML templates |
+| Deploy | Vercel | — | Wildcard subdomains, Edge Network, CI/CD gratis |
 
-### ¿Por qué NO se incluyó?
+### Decisión: ¿por qué NO?
 
-- **Bot de WhatsApp (Twilio)**: eliminado del scope inicial. La arquitectura deja el webhook listo para activarse en el futuro.
-- **Pagos en línea**: los pagos son presenciales. Solo se registran transacciones.
-- **App nativa (React Native)**: la PWA cubre el 95% de los casos de uso móvil sin el overhead de dos codebases.
+- **App nativa (React Native)**: la PWA cubre el 95% de los casos móviles sin mantener dos codebases.
+- **Pagos en línea**: los pagos son presenciales. El sistema solo registra transacciones.
+- **WhatsApp Bot (Twilio)**: disponible como add-on futuro. El webhook está listo en la arquitectura.
 
 ---
 
 ## 3. Arquitectura general
 
 ```
-┌─────────────────────────────────────────────────────┐
-│                   CLIENTES (navegador)               │
-│  spa-luna.tuapp.co   ·   glam-studio.tuapp.co       │
-│  (o dominio propio)      (o dominio propio)         │
-└──────────────────┬──────────────────────────────────┘
+┌──────────────────────────────────────────────────────────┐
+│                   CLIENTES (navegador)                    │
+│  channel-spa.glowos.co  ·  gio-spa.glowos.co             │
+│  (o dominio propio)         (o dominio propio)           │
+└──────────────────┬───────────────────────────────────────┘
                    │ HTTPS
-┌──────────────────▼──────────────────────────────────┐
-│              VERCEL (Edge Network)                   │
-│  Next.js 14 — App Router                            │
-│  Middleware: detecta subdominio → carga tenant      │
-│  next-intl: detecta locale → carga mensajes         │
-│  next-pwa: service worker + manifest dinámico       │
-└──────────────────┬──────────────────────────────────┘
+┌──────────────────▼───────────────────────────────────────┐
+│              VERCEL (Edge Network)                        │
+│  Next.js 16.2.3 — App Router                             │
+│  proxy.ts: detecta subdominio → carga tenant config      │
+│  next-intl: detecta locale → carga messages/[locale].json│
+│  next-pwa: service worker + manifest dinámico por tenant  │
+└──────────────────┬───────────────────────────────────────┘
                    │
-┌──────────────────▼──────────────────────────────────┐
-│                  SUPABASE                            │
-│  ┌──────────┐  ┌──────────┐  ┌──────────────────┐  │
-│  │   Auth   │  │PostgreSQL│  │  Edge Functions  │  │
-│  │  OAuth   │  │  + RLS   │  │  (cron + push)   │  │
-│  └──────────┘  └──────────┘  └──────────────────┘  │
-│  ┌──────────┐  ┌──────────┐                        │
-│  │ Storage  │  │ Realtime │                        │
-│  │  logos   │  │  notifs  │                        │
-│  └──────────┘  └──────────┘                        │
-└─────────────────────────────────────────────────────┘
+┌──────────────────▼───────────────────────────────────────┐
+│                  SUPABASE                                 │
+│  ┌──────────┐  ┌──────────┐  ┌──────────────────────┐   │
+│  │   Auth   │  │PostgreSQL│  │    Edge Functions    │   │
+│  │  OAuth   │  │  + RLS   │  │  appointment-reminders│   │
+│  └──────────┘  └──────────┘  └──────────────────────┘   │
+│  ┌──────────┐                                            │
+│  │ Storage  │  logos, imágenes de productos              │
+│  └──────────┘                                            │
+└──────────────────┬───────────────────────────────────────┘
                    │
-┌──────────────────▼──────────────────────────────────┐
-│             SERVICIOS EXTERNOS                       │
-│  Resend (email)  ·  Web Push API  ·  (Twilio futuro)│
-└─────────────────────────────────────────────────────┘
+┌──────────────────▼───────────────────────────────────────┐
+│             SERVICIOS EXTERNOS                            │
+│  Resend (email)  ·  Web Push API  ·  (WhatsApp futuro)   │
+└──────────────────────────────────────────────────────────┘
 ```
 
 ### Flujo de una request
 
-1. Usuario entra a `spa-luna.tuapp.co/es/citas`
-2. Middleware de Next.js extrae el subdominio `spa-luna`
-3. Se consulta la tabla `tenants` en Supabase → se carga la config del tenant
-4. `TenantProvider` inyecta los CSS custom properties (`--brand-accent`, `--brand-radius`, etc.)
-5. `next-intl` detecta el locale `es` en la URL y carga `messages/es.json`
-6. El componente verifica `tenant.feature_solar` → muestra o no el módulo de bronceo
+1. Usuario entra a `channel-spa.glowos.co/es/calendario`
+2. `proxy.ts` extrae el subdominio `channel-spa`
+3. Se consulta `tenants` en Supabase → config completa del tenant
+4. `TenantProvider` inyecta los CSS custom properties (`--brand-primary`, `--brand-radius`, etc.)
+5. `next-intl` detecta el locale `es` y carga `messages/es.json`
+6. El componente verifica rol del usuario → muestra vista correcta del calendario
 7. El `<html>` lleva `data-theme="dark|light"` según preferencia guardada
 
 ---
 
 ## 4. Modelo de datos
 
-### Tabla `tenants` — configuración por cliente
+### Tabla `tenants`
 
 ```sql
 CREATE TABLE tenants (
   id    UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  slug  TEXT UNIQUE NOT NULL,   -- 'spa-luna', 'glam-studio'
+  slug  TEXT UNIQUE NOT NULL,   -- 'channel-spa', 'gio-spa'
   name  TEXT NOT NULL,
 
   -- Localización
-  default_locale  TEXT DEFAULT 'es',        -- locale por defecto
-  active_locales  TEXT[] DEFAULT '{es}',    -- idiomas disponibles
+  default_locale  TEXT DEFAULT 'es',
+  active_locales  TEXT[] DEFAULT '{es}',
   currency        TEXT DEFAULT 'COP',
   timezone        TEXT DEFAULT 'America/Bogota',
 
-  -- Branding
-  logo_url         TEXT,
+  -- Branding (logo pendiente hasta que cliente lo envíe)
+  logo_url              TEXT,
   brand_color_primary   TEXT DEFAULT '#7F77DD',
   brand_color_bg        TEXT DEFAULT '#ffffff',
   brand_color_text      TEXT DEFAULT '#1a1a1a',
@@ -148,8 +149,8 @@ CREATE TABLE tenants (
   brand_font_body       TEXT DEFAULT 'system-ui, sans-serif',
   brand_radius          TEXT DEFAULT '8px',
 
-  -- Textos del home (editables por el admin del SPA)
-  hero_headline   JSONB DEFAULT '{"es":"Bienvenida"}',  -- por locale
+  -- Textos del home (editables por la dueña del spa)
+  hero_headline   JSONB DEFAULT '{"es":"Bienvenida"}',
   hero_subtext    JSONB DEFAULT '{"es":"Tu spa de confianza"}',
   hero_cta        JSONB DEFAULT '{"es":"Agendar cita"}',
 
@@ -159,227 +160,308 @@ CREATE TABLE tenants (
   feature_loyalty       BOOLEAN DEFAULT true,
   feature_referrals     BOOLEAN DEFAULT true,
   feature_reviews       BOOLEAN DEFAULT true,
-  feature_solar         BOOLEAN DEFAULT false,
+  feature_solar         BOOLEAN DEFAULT false,  -- add-on independiente del plan
   feature_sales_history BOOLEAN DEFAULT true,
-  feature_whatsapp_bot  BOOLEAN DEFAULT false,   -- reservado para futuro
+  feature_whatsapp_bot  BOOLEAN DEFAULT false,  -- add-on futuro
 
-  -- Configuración de fidelización
+  -- Fidelización
   points_per_service   INT DEFAULT 100,
   points_per_purchase  INT DEFAULT 1,
   referral_bonus_pts   INT DEFAULT 200,
   cancellation_penalty INT DEFAULT 50,
 
-  -- Plan
-  plan       TEXT DEFAULT 'starter' CHECK (plan IN ('starter','pro','premium')),
+  -- Plan: free | starter | pro | white_label
+  -- "premium" mantenido por compatibilidad legacy
+  plan   TEXT DEFAULT 'starter'
+         CHECK (plan IN ('free','starter','pro','white_label','premium')),
   active     BOOLEAN DEFAULT true,
   created_at TIMESTAMPTZ DEFAULT now()
 );
 ```
 
-### Otras tablas principales
+### Tabla `profiles`
 
-Ver archivo: [`docs/database-schema.sql`](./docs/database-schema.sql)
+```sql
+CREATE TABLE profiles (
+  id          UUID PRIMARY KEY REFERENCES auth.users(id),
+  tenant_id   UUID NOT NULL REFERENCES tenants(id),
+  full_name   TEXT,
+  avatar_url  TEXT,
 
-Resumen de tablas:
+  -- Roles del sistema:
+  -- admin        → Dueña / propietaria: control total
+  -- trabajadora  → Especialista: solo lectura de su propia agenda
+  -- recepcionista→ Puede gestionar citas, no configuración
+  -- cliente      → Agenda, puntos, perfil
+  role        TEXT DEFAULT 'cliente'
+              CHECK (role IN ('admin','trabajadora','recepcionista','cliente')),
 
-| Tabla                    | Descripción                          |
-| ------------------------ | ------------------------------------ |
-| `tenants`                | Config de cada SPA cliente           |
-| `profiles`               | Usuarios (vinculado a `auth.users`)  |
-| `services`               | Servicios cosméticos por tenant      |
-| `specialists`            | Especialistas por tenant             |
-| `appointments`           | Citas agendadas                      |
-| `solar_spaces`           | Espacios físicos de bronceo solar    |
-| `solar_bookings`         | Reservas de bronceo                  |
-| `products`               | Productos de la tienda               |
-| `orders` / `order_items` | Pedidos apartados presencialmente    |
-| `inventory_movements`    | Entradas y salidas de stock          |
-| `loyalty_transactions`   | Historial de puntos                  |
-| `redemption_rules`       | Tabla de canje de puntos             |
-| `referrals`              | Sistema de referidos                 |
-| `reviews`                | Reseñas con moderación               |
-| `push_subscriptions`     | Suscripciones Web Push               |
-| `notifications_log`      | Historial de notificaciones enviadas |
+  referral_code  TEXT UNIQUE,
+  referred_by    UUID REFERENCES profiles(id),
+  loyalty_points INT DEFAULT 0,
 
-> Todas las tablas tienen `tenant_id` y Row Level Security activado.
+  preferred_theme  TEXT DEFAULT 'system',
+  preferred_locale TEXT DEFAULT 'es',
+
+  notifications_promo BOOLEAN DEFAULT true,
+  notifications_tips  BOOLEAN DEFAULT true,
+  push_subscription   JSONB,
+
+  -- Token único para feed iCal privado (/api/calendar/[token])
+  calendar_sync_token TEXT UNIQUE,
+
+  created_at  TIMESTAMPTZ DEFAULT now()
+);
+```
+
+### Otras tablas
+
+| Tabla | Descripción |
+|---|---|
+| `services` | Servicios del spa (nombre/descripción JSONB multi-locale) |
+| `specialists` | Especialistas del tenant, vinculadas a un `profile` |
+| `specialist_schedules` | Horarios semanales por especialista |
+| `appointments` | Citas agendadas con estado y puntos |
+| `treatment_plans` | Plan de N sesiones para un cliente (ej: "Lifting 6 sesiones") |
+| `treatment_sessions` | Sesiones individuales de un plan (scheduled/completed/skipped) |
+| `products` | Catálogo de tienda con stock |
+| `orders` / `order_items` | Pedidos apartados para pago presencial |
+| `inventory_movements` | Entradas, salidas y ajustes de stock |
+| `loyalty_transactions` | Historial de puntos ganados/canjeados |
+| `reviews` | Reseñas con moderación por admin |
+| `notifications` | Notificaciones del sistema por usuario |
+| `solar_spaces` | Espacios físicos de bronceo (solo si `feature_solar`) |
+| `solar_bookings` | Reservas de bronceo UV |
+
+> Todas las tablas tienen `tenant_id` y Row Level Security activado.  
+> Ver esquema completo en [`docs/database-schema.sql`](./docs/database-schema.sql).
 
 ---
 
 ## 5. Sistema de theming white-label
 
-Cada tenant se diferencia visualmente mediante **CSS custom properties** inyectadas dinámicamente en el `<html>` root.
+Cada tenant se diferencia visualmente mediante **CSS custom properties** inyectadas en runtime desde su configuración.
 
 ### Tokens de diseño
 
 ```css
-/* Generados en runtime desde la config del tenant */
+/* Generados en runtime desde tenants.brand_color_* */
 :root {
-  --brand-primary: #c9956a; /* color principal / CTA */
-  --brand-bg: #1a1a2e; /* fondo del hero */
-  --brand-surface: #252540; /* tarjetas / superficies */
-  --brand-text: #f0e8df; /* texto principal */
-  --brand-border: #3a3a5c; /* bordes */
-  --brand-radius: 4px; /* radio de bordes */
-  --font-heading: Georgia, serif;
-  --font-body: system-ui, sans-serif;
-}
-
-[data-theme="dark"] {
-  --brand-bg: var(--brand-dark-bg);
-  --brand-surface: var(--brand-dark-surface);
-  /* ... etc */
+  --brand-primary: #c87e9a;    /* botones, CTAs, highlights */
+  --brand-bg:      #140f11;    /* fondo de página */
+  --brand-surface: #231519;    /* tarjetas, paneles */
+  --brand-text:    #f9ece8;    /* texto principal */
+  --brand-border:  #3a2228;    /* bordes */
+  --brand-radius:  10px;       /* radio global de bordes */
+  --font-heading:  Georgia, serif;
+  --font-body:     system-ui, sans-serif;
 }
 ```
 
-### Lo que es parametrizable por tenant
+### Identidades visuales de los tenants activos
 
-| Token                 | Ejemplos                                      | Impacto visual            |
-| --------------------- | --------------------------------------------- | ------------------------- |
-| `brand_color_primary` | `#c9956a`, `#d4af6a`, `#c4607a`               | Botones, CTAs, highlights |
-| `brand_color_bg`      | Dark, light, pastel                           | Fondo del hero y páginas  |
-| `brand_font_heading`  | Georgia, Playfair, Cormorant                  | Personalidad del headline |
-| `brand_font_body`     | system-ui, DM Sans, Lato                      | Legibilidad del contenido |
-| `brand_radius`        | `2px` (sharp), `8px` (normal), `20px` (suave) | Sensación general del UI  |
-| `logo_url`            | URL de Supabase Storage                       | Logo en navbar y PWA      |
-| `hero_headline`       | Texto por locale                              | El mensaje principal      |
+| Tenant | Primario | Estilo | Tipografía |
+|---|---|---|---|
+| Channel Spa | `#c87e9a` rosa ciruela | Oscuro cálido, femenino | Georgia serif |
+| Gio Spa | `#6b9e6f` sage green | Verde bosque, sereno | Cormorant + DM Sans |
+| Spa Luna | `#c9956a` arena dorada | Oscuro elegante | Georgia serif |
+| Glam Studio | `#d4af6a` dorado | Negro minimalista | Playfair + DM Sans |
 
-### Diferenciación del home público
+### Lo que es configurable por tenant
 
-El home de cada tenant se diferencia por:
-
-1. **Paleta de colores** — oscuro/elegante vs pastel/suave vs minimalista negro
-2. **Tipografía** — serif clásica vs sans-serif moderna vs geométrica
-3. **Radio de bordes** — sharp (lujo) vs redondo (amigable)
-4. **Textos** — escritos por el dueño del SPA en su idioma
-5. **Servicios destacados** — cada uno elige qué mostrar en el home
-6. **Módulos visibles** — bronceo solar solo aparece si `feature_solar = true`
+| Token | Impacto |
+|---|---|
+| `brand_color_primary` | Botones, iconos, highlights, focus rings |
+| `brand_font_heading` | H1–H3, nombres de servicios |
+| `brand_radius` | `2px` sharp (lujo) → `20px` suave (amigable) |
+| `logo_url` | Navbar y splash de la PWA |
+| `hero_headline` | Texto principal del home, por locale |
+| `feature_*` | Qué módulos son visibles para ese tenant |
 
 ---
 
-## 6. PWA y mobile-first
+## 6. Roles y permisos
 
-### Principios de diseño mobile-first
+### Roles disponibles
+
+| Rol | Quién es | Acceso |
+|---|---|---|
+| `admin` | Dueña / propietaria | Todo: calendario del equipo, gestión de usuarios, configuración, ventas |
+| `trabajadora` | Especialista del spa | Solo su propia agenda (read-only), su perfil |
+| `recepcionista` | Recepcionista | Agenda, citas, inventario (sin configuración ni usuarios) |
+| `cliente` | Clienta final | Booking, su calendario personal, puntos, tienda, perfil |
+
+### Matriz de acceso por sección
+
+| Sección | admin | recepcionista | trabajadora | cliente |
+|---|---|---|---|---|
+| Home público | ✓ | ✓ | ✓ | ✓ |
+| Agendar cita | ✓ | ✓ | ✓ | ✓ |
+| Mi calendario | → admin/calendario | ✓ | ✓ solo lectura | ✓ |
+| Calendario del equipo | ✓ editable | ✓ editable | ✗ | ✗ |
+| Mis citas | ✓ | ✓ | ✓ | ✓ |
+| Puntos / fidelización | ✓ | ✓ | ✗ | ✓ |
+| Tienda | ✓ | ✓ | ✗ | ✓ |
+| Admin → Agenda | ✓ | ✓ | ✗ | ✗ |
+| Admin → Calendario | ✓ | ✓ | ✓ solo lectura | ✗ |
+| Admin → Usuarios | ✓ | ✗ | ✗ | ✗ |
+| Admin → Inventario | ✓ | ✓ | ✗ | ✗ |
+| Admin → Configuración | ✓ | ✗ | ✗ | ✗ |
+
+### Gestión de usuarios (admin)
+
+La dueña puede desde `/admin/usuarios`:
+- Invitar usuarias por email (Supabase Auth enviará el link de acceso)
+- Cambiar el rol con un menú de 3 opciones
+- Desactivar una trabajadora (downgrade a cliente, desvincular de specialists)
+- Ver puntos, email, especialista vinculada
+
+---
+
+## 7. Calendario y sincronización
+
+### Vistas según rol
+
+**Cliente** — `/[locale]/calendario`
+- Vista semanal con sus citas (confirmadas + pendientes)
+- Planes de tratamiento activos con barra de progreso
+- Botón para sincronizar con Google/Apple Calendar
+
+**Trabajadora** — `/[locale]/calendario`
+- Vista semanal de solo lectura de su propia agenda
+- Badge "Solo lectura" visible — no puede hacer click en eventos
+- Sin detalles de otras especialistas
+
+**Admin / Recepcionista** — `/[locale]/admin/calendario`
+- Vista de equipo con todas las especialistas en colores distintos
+- Filtro por especialista (chips con nombre y color)
+- Leyenda de colores al pie
+- Click en evento abre panel de detalle
+
+### Sincronización Google Calendar / Apple Calendar
+
+Cada usuario tiene un **feed iCal privado** en:
+```
+GET /api/calendar/[token]
+```
+
+El token se genera automáticamente y se almacena en `profiles.calendar_sync_token`.
+
+**Cómo suscribirse:**
+- **Google Calendar**: Otros calendarios → Desde URL → pegar la URL completa
+- **Apple Calendar**: Archivo → Nueva suscripción de calendario → pegar URL
+- **Outlook**: Agregar calendario → Suscribirse desde web
+
+La suscripción se actualiza automáticamente. El token es privado — regenerarlo invalida todas las suscripciones activas.
+
+### Tratamientos multi-sesión
+
+Algunos servicios (lifting de pestañas, depilación láser, etc.) se venden como paquetes de N sesiones:
+
+```
+TreatmentPlan (plan maestro)
+  ├── name: { es: "Lifting de pestañas — 6 sesiones" }
+  ├── total_sessions: 6
+  ├── completed_sessions: 2
+  └── expires_at: 2026-09-15
+
+  └── TreatmentSession × 6
+        ├── session_number: 1 → completed ✓
+        ├── session_number: 2 → completed ✓
+        ├── session_number: 3 → scheduled (próxima cita)
+        └── session_number: 4-6 → pending
+```
+
+En el calendario, los eventos de sesión muestran `3/6` para indicar el progreso.
+
+---
+
+## 8. PWA y mobile-first
+
+### Principios de diseño
 
 - Layout base diseñado para `390px` (iPhone 14)
 - Breakpoints hacia arriba: `sm:640px` `md:768px` `lg:1024px`
 - Navegación: **bottom nav** en móvil, **sidebar** en `lg+`
 - Touch targets mínimo `44px` (WCAG 2.5.5)
-- Fuentes base `16px` — nunca menos en móvil
 - `safe-area-inset` para notch y home indicator en iOS
 
-### Configuración PWA
+### Manifest dinámico por tenant
 
 ```
-next-pwa genera automáticamente:
-  public/sw.js              ← service worker
-  public/workbox-*.js       ← librería de caché
-
-Manifest dinámico por tenant:
-  /api/manifest/[slug]      ← JSON con colores e íconos del tenant
+/api/manifest/[slug]  →  JSON con nombre, colores e íconos del tenant
 ```
 
-### Estrategia de caché offline
+### Caché offline
 
-| Recurso                            | Estrategia           | TTL        |
-| ---------------------------------- | -------------------- | ---------- |
-| Assets estáticos (`/_next/static`) | CacheFirst           | indefinido |
-| API de citas próximas              | NetworkFirst         | 24h        |
-| API de productos                   | StaleWhileRevalidate | 1h         |
-| Imágenes de productos              | CacheFirst           | 7 días     |
-| Páginas HTML                       | NetworkFirst         | —          |
-
-### Instalación en iOS / Android
-
-Al entrar al home, el browser muestra el banner de instalación automáticamente si:
-
-- El site sirve HTTPS
-- Tiene `manifest.json` válido con iconos
-- Tiene service worker registrado
+| Recurso | Estrategia | TTL |
+|---|---|---|
+| Assets estáticos (`/_next/static`) | CacheFirst | indefinido |
+| API de citas próximas | NetworkFirst | 24h |
+| API de productos | StaleWhileRevalidate | 1h |
+| Imágenes | CacheFirst | 7 días |
+| Páginas HTML | NetworkFirst | — |
 
 ---
 
-## 7. Internacionalización (i18n)
+## 9. Internacionalización (i18n)
 
-### Idiomas soportados
+### Idiomas disponibles
 
-| Código | Idioma    | Activado por defecto      |
-| ------ | --------- | ------------------------- |
-| `es`   | Español   | Sí (todos los tenants CO) |
-| `en`   | English   | Sí (todos los tenants US) |
-| `de`   | Deutsch   | Opcional                  |
-| `fr`   | Français  | Opcional                  |
-| `pt`   | Português | Opcional                  |
+| Código | Idioma | Tenants activos |
+|---|---|---|
+| `es` | Español | Channel Spa, Gio Spa (secundario), Spa Luna |
+| `en` | English | Gio Spa, Glam Studio |
 
 ### Estructura de URLs
 
 ```
-/es/inicio          → home en español
-/en/home            → home en inglés
-/de/startseite      → home en alemán
-
-/es/citas           → agendamiento en español
-/en/appointments    → agendamiento en inglés
+/es/calendario    → calendario en español
+/en/calendar      → calendario en inglés
+/es/agendar       → booking en español
+/en/book          → booking en inglés
 ```
 
-### Cómo funciona la detección de locale
+### Dos capas de textos
 
-1. Parámetro en URL `/[locale]/...` — máxima prioridad
-2. Cookie `NEXT_LOCALE` — preferencia guardada
-3. Header `Accept-Language` del navegador
-4. Locale por defecto del tenant (`default_locale`)
+**Capa 1 — Textos fijos de la UI** (`messages/[locale].json`)
+Botones, labels, mensajes de error — iguales para todos los tenants.
+Namespaces: `nav`, `auth`, `home`, `booking`, `points`, `store`, `profile`, `calendar`, `admin`, `common`.
 
-### Textos en dos capas
-
-**Capa 1 — Textos fijos de la app** (`messages/[locale].json`)
-Traducciones de la interfaz: botones, labels, mensajes de error, etc.
-Estos son los mismos para todos los tenants.
-
-**Capa 2 — Textos del tenant** (columnas JSONB en `tenants`)
-El hero headline, subtítulo, descripción de servicios — los edita el dueño del SPA desde su panel. Se guardan como `{ "es": "...", "en": "...", "de": "..." }`.
-
-### Selector de idioma en la app
-
-Visible en la barra superior solo si el tenant tiene `active_locales.length > 1`. Se renderiza como pills: `ES · EN · DE`.
+**Capa 2 — Textos del tenant** (JSONB en `tenants`)
+Hero headline, subtítulo, CTAs — los edita la dueña del spa. Se guardan como `{ "es": "...", "en": "..." }`.
 
 ---
 
-## 8. Dark mode
+## 10. Dark mode
 
-### 3 modos disponibles
+### 3 modos
 
-| Modo     | Comportamiento              | Cómo se activa        |
-| -------- | --------------------------- | --------------------- |
-| `system` | Sigue la preferencia del OS | Por defecto al entrar |
-| `light`  | Siempre claro               | Toggle del usuario    |
-| `dark`   | Siempre oscuro              | Toggle del usuario    |
+| Modo | Comportamiento | Persistencia |
+|---|---|---|
+| `system` | Sigue el OS | Por defecto |
+| `light` | Siempre claro | localStorage + Supabase |
+| `dark` | Siempre oscuro | localStorage + Supabase |
 
-### Persistencia de la preferencia
+### Paletas dark por tenant
 
-1. `localStorage.getItem('theme')` — carga inmediata sin flash
-2. `profiles.preferred_theme` en Supabase — sincroniza entre dispositivos
-
-### Colores dark mode por tenant
-
-Cada tenant define su propia paleta dark (6 tokens):
-
+Cada tenant define 4 tokens dark independientes:
 ```
-brand_color_dark_bg       → fondo principal en dark
-brand_color_dark_surface  → tarjetas en dark
-brand_color_dark_text     → texto en dark
-brand_color_dark_border   → bordes en dark
+brand_color_dark_bg       → fondo principal
+brand_color_dark_surface  → tarjetas y paneles
+brand_color_dark_text     → texto principal
+brand_color_dark_border   → bordes
 ```
 
-El `brand_color_primary` (acento) se ajusta ligeramente en dark para mantener contraste mínimo de 4.5:1 (WCAG AA).
+El color primario (`--brand-primary`) se mantiene igual en dark para consistencia de marca.
 
-### Prevención de flash (FOUC)
+### Prevención de FOUC
 
-Script inline en `<head>` antes de cualquier CSS — aplica `data-theme` antes del primer render:
-
+Script inline en `<head>` antes de cualquier CSS:
 ```html
 <script>
   const t = localStorage.getItem("theme") || "system";
-  const dark =
-    t === "dark" ||
+  const dark = t === "dark" ||
     (t === "system" && matchMedia("(prefers-color-scheme:dark)").matches);
   document.documentElement.setAttribute("data-theme", dark ? "dark" : "light");
 </script>
@@ -387,566 +469,408 @@ Script inline en `<head>` antes de cualquier CSS — aplica `data-theme` antes d
 
 ---
 
-## 9. Módulos del sistema
+## 11. Módulos del sistema
 
 ### Matriz de módulos por plan
 
-| Módulo                                  | Starter | Pro | Premium |
-| --------------------------------------- | ------- | --- | ------- |
-| Login OAuth (Google, Facebook, Apple)   | ✓       | ✓   | ✓       |
-| Agendamiento de citas                   | ✓       | ✓   | ✓       |
-| Panel admin básico                      | ✓       | ✓   | ✓       |
-| Notificaciones Web Push (recordatorios) | ✓       | ✓   | ✓       |
-| Multi-idioma (i18n)                     | ✓       | ✓   | ✓       |
-| Dark mode                               | ✓       | ✓   | ✓       |
-| PWA instalable                          | ✓       | ✓   | ✓       |
-| Tienda de productos                     | —       | ✓   | ✓       |
-| Inventario con alertas                  | —       | ✓   | ✓       |
-| Historial de ventas                     | —       | ✓   | ✓       |
-| Sistema de fidelización (puntos)        | —       | ✓   | ✓       |
-| Sistema de referidos con score          | —       | ✓   | ✓       |
-| Reseñas y calificaciones                | —       | ✓   | ✓       |
-| Notificaciones push de promociones      | —       | ✓   | ✓       |
-| ☀️ Bronceo solar (agenda separada)      | —       | —   | ✓       |
-| Dominio propio                          | —       | —   | ✓       |
-| Soporte prioritario                     | —       | —   | ✓       |
+| Módulo | Free | Starter | Pro | White-label |
+|---|---|---|---|---|
+| Agendamiento de citas | ✓ | ✓ | ✓ | ✓ |
+| Calendario personal (cliente/trabajadora) | ✓ | ✓ | ✓ | ✓ |
+| iCal sync (Google / Apple Calendar) | ✓ | ✓ | ✓ | ✓ |
+| Login OAuth (Google, Apple) | ✓ | ✓ | ✓ | ✓ |
+| PWA instalable | ✓ | ✓ | ✓ | ✓ |
+| Multi-idioma | ✓ | ✓ | ✓ | ✓ |
+| Dark mode | ✓ | ✓ | ✓ | ✓ |
+| Recordatorios automáticos (email + push) | ✓ | ✓ | ✓ | ✓ |
+| 1 trabajadora | ✓ | — | — | — |
+| Hasta 3 trabajadoras | — | ✓ | — | — |
+| Hasta 10 trabajadoras | — | — | ✓ | ✓ |
+| Tienda de productos | — | ✓ | ✓ | ✓ |
+| Programa de puntos y fidelización | — | ✓ | ✓ | ✓ |
+| Sistema de referidos | — | ✓ | ✓ | ✓ |
+| Tratamientos multi-sesión | — | ✓ | ✓ | ✓ |
+| Calendario del equipo (admin) | — | — | ✓ | ✓ |
+| Gestión de usuarios (invite + roles) | — | — | ✓ | ✓ |
+| Inventario con alertas | — | — | ✓ | ✓ |
+| Historial de ventas | — | — | ✓ | ✓ |
+| Reseñas y calificaciones | — | — | ✓ | ✓ |
+| Dominio propio | — | — | — | ✓ |
+| Soporte prioritario | — | — | — | ✓ |
+| ☀️ Bronceo solar | Add-on | Add-on | Add-on | Add-on |
+| 🤖 WhatsApp Bot | Add-on | Add-on | Add-on | Add-on |
 
-### Detalle de cada módulo
+> **Add-ons** se contratan por separado, independientemente del plan. Ver [sección 15](#15-planes-y-precios).
 
-#### 9.1 Auth — Login social (OAuth)
+### Detalle de módulos clave
 
-- Proveedores: Google, Facebook, Apple
-- Supabase Auth maneja el flujo completo
-- Al registrarse se crea automáticamente un registro en `profiles` (trigger SQL)
-- Roles disponibles: `cliente`, `recepcionista`, `admin`
-- El admin del SPA puede asignar roles desde su panel
+#### Agendamiento de citas
 
-#### 9.2 Agendamiento de citas
+- Wizard de 4 pasos: servicio → especialista (opcional) → fecha → hora
+- Algoritmo de disponibilidad en `lib/booking/slots.ts` (grilla de 30 min, excluye solapamientos)
+- Confirmación por email (Resend) + push notification
+- Cancelación sin penalidad hasta 2h antes; tardía descuenta `cancellation_penalty` puntos
+- La dueña ve la agenda del día con vista por especialista
 
-- Vista de calendario semanal/mensual
-- El cliente selecciona: servicio → especialista (opcional) → fecha → hora
-- Confirmación instantánea con notificación push + email
-- Reglas:
-  - Cancelación sin penalidad hasta 2h antes
-  - Cancelación tardía descuenta `cancellation_penalty` puntos
-  - Al completar → acredita `points_per_service` puntos automáticamente (trigger)
-- El admin ve la agenda del día con vista tipo kanban (por especialista)
+#### Calendario y iCal sync
 
-#### 9.3 ☀️ Bronceo solar (feature_solar)
+Ver [sección 7](#7-calendario-y-sincronización).
 
-- Módulo completamente separado de agendamiento de servicios
-- Espacios físicos configurables: nombre, capacidad, descripción
-- Horarios disponibles: slots de 45min entre 10:00 y 15:00
-- Vista de cuadrícula: espacio × hora, con indicador de disponibilidad
-- Se envían instrucciones de preparación al confirmar
-- Puntos: `points_per_service / 2` por sesión completada
+#### Tratamientos multi-sesión
 
-#### 9.4 Tienda
+Ver [sección 7](#7-calendario-y-sincronización).
 
-- Catálogo de productos con imagen, descripción, precio, stock
-- El cliente puede "apartar" un producto (pago presencial al recoger)
-- Staff confirma la entrega → descuenta stock → acredita puntos
-- El cliente puede pagar total o parcialmente con puntos
+#### Gestión de usuarios
 
-#### 9.5 Inventario
+- Solo accesible para `admin`
+- Invitación por email (Supabase Auth envía el link)
+- Cambio de rol en tiempo real (admin / trabajadora / recepcionista / cliente)
+- Desactivación soft (no borra datos ni el auth user)
+- Vinculación de `profile` a `specialist`
 
-- Solo accesible para `admin` y `recepcionista`
-- CRUD de productos
-- Alerta automática cuando `stock < stock_alert_threshold`
-- Historial de movimientos (entradas, salidas, ajustes)
-- Exportar a CSV
+#### Fidelización y puntos
 
-#### 9.6 Historial de ventas
+| Acción | Puntos |
+|---|---|
+| Completar servicio | `points_per_service` (default 100) |
+| Sesión de bronceo | `points_per_service / 2` (default 50) |
+| Compra en tienda | `points_per_purchase` por unidad de moneda |
+| Referido que completa 1er cita | `referral_bonus_pts` (default 200) |
+| Reseña aprobada | 30 pts (fijo) |
+| Cancelación tardía | `-cancellation_penalty` (default -50) |
 
-- Registro de cada transacción confirmada presencialmente
-- Filtros: fecha, cliente, producto/servicio, método de pago
-- Totales diarios y mensuales
-- Exportar a CSV
+#### ☀️ Bronceo solar (add-on)
 
-#### 9.7 Fidelización y puntos
+Módulo separado para spas con camas UV. Se activa con `feature_solar = true` en el tenant. Incluye:
+- Gestión de espacios físicos (nombre, capacidad)
+- Slots de 45 min entre 10:00–15:00
+- Contador de sesiones por clienta
+- Puntos y recordatorios al confirmar
 
-Acumulación:
+#### Recordatorios automáticos (Edge Function)
 
-| Acción                                         | Puntos                                     |
-| ---------------------------------------------- | ------------------------------------------ |
-| Completar servicio cosmético                   | `points_per_service` (default 100)         |
-| Completar sesión de bronceo                    | `points_per_service / 2` (default 50)      |
-| Compra en tienda                               | `points_per_purchase` por unidad de moneda |
-| Invitar a alguien que complete su 1er servicio | `referral_bonus_pts` (default 200)         |
-| Dejar reseña aprobada                          | 30 pts (fijo)                              |
-| Cancelación tardía                             | `-cancellation_penalty` (default -50)      |
-
-Redención:
-
-- Por servicios (descuento % o servicio gratis)
-- Por productos (descuento % o producto gratis)
-- Reglas configurables por admin en `redemption_rules`
-
-#### 9.8 Sistema de referidos
-
-- Cada `profile` tiene un `referral_code` único (generado automáticamente)
-- Link compartible: `spa-luna.tuapp.co/es/unirse?ref=ABC123`
-- Al registrarse con código → se crea registro en `referrals`
-- Trigger: cuando el invitado completa su primer servicio → el invitador recibe `referral_bonus_pts`
-- Dashboard del cliente: cuántos invitó, cuántos completaron, puntos ganados
-
-#### 9.9 Reseñas y calificaciones
-
-- Solo usuarios con cita `status = 'completada'` pueden calificar
-- Rating 1-5 estrellas + comentario de texto
-- Flujo de moderación: `pendiente` → `aprobada` o `rechazada` por admin
-- El SPA puede responder públicamente a cada reseña
-- Puntos: 30 pts al aprobar la reseña (trigger)
-
-#### 9.10 Notificaciones Web Push
-
-Tipos de notificación:
-
-| Tipo                     | Trigger                  | Opt-in requerido                  |
-| ------------------------ | ------------------------ | --------------------------------- |
-| Recordatorio de cita     | 24h antes (cron)         | No — siempre se envía             |
-| Recordatorio de bronceo  | 24h antes (cron)         | No — siempre se envía             |
-| Puntos acreditados       | Al completar cita/compra | No — siempre se envía             |
-| Pedido listo             | Al confirmar el staff    | No — siempre se envía             |
-| Promociones y descuentos | Manual desde admin       | Sí — `notifications_promo = true` |
-| Tips de cuidado          | Manual desde admin       | Sí — `notifications_tips = true`  |
-
-El cliente gestiona sus preferencias desde su perfil.
+`supabase/functions/appointment-reminders/` corre como cron y:
+1. Encuentra citas en la ventana 24–25h
+2. Envía email de recordatorio via Resend
+3. Envía Web Push (scaffold listo, requiere VAPID)
 
 ---
 
-## 10. Estructura de archivos
+## 12. Estructura de archivos
 
 ```
 spa-saas/
 │
-├── app/                              ← Next.js App Router
-│   ├── [locale]/                     ← i18n routing (es, en, de, fr, pt)
+├── app/
+│   ├── [locale]/
 │   │   ├── layout.tsx                ← TenantProvider + ThemeProvider + i18n
-│   │   ├── page.tsx                  ← Home público del SPA
-│   │   ├── agendar/
-│   │   │   └── page.tsx              ← Agendamiento de citas
-│   │   ├── bronceo/
-│   │   │   └── page.tsx              ← Bronceo solar (feature_solar guard)
-│   │   ├── tienda/
-│   │   │   └── page.tsx              ← Tienda de productos
-│   │   ├── puntos/
-│   │   │   └── page.tsx              ← Dashboard de fidelización
-│   │   ├── perfil/
-│   │   │   └── page.tsx              ← Perfil, notificaciones, idioma
+│   │   ├── page.tsx                  ← Home público del spa
+│   │   ├── agendar/page.tsx          ← Wizard de agendamiento
+│   │   ├── citas/page.tsx            ← Mis citas + historial + cancelación
+│   │   ├── calendario/page.tsx       ← Calendario personal (cliente/trabajadora)
+│   │   ├── tienda/page.tsx           ← Tienda de productos
+│   │   ├── puntos/page.tsx           ← Dashboard de fidelización
+│   │   ├── perfil/page.tsx           ← Perfil, tema, idioma, notificaciones
 │   │   ├── auth/
+│   │   │   ├── login/page.tsx
 │   │   │   └── callback/route.ts     ← OAuth callback
-│   │   └── admin/                    ← Panel del SPA (role guard)
-│   │       ├── agenda/page.tsx
-│   │       ├── clientes/page.tsx
+│   │   └── admin/                    ← Panel de la dueña (role guard)
+│   │       ├── layout.tsx            ← Navegación admin + verificación de rol
+│   │       ├── page.tsx              ← Redirect a /admin/agenda
+│   │       ├── agenda/page.tsx       ← Vista de agenda del día
+│   │       ├── calendario/page.tsx   ← Calendario del equipo
+│   │       ├── usuarios/page.tsx     ← Gestión de usuarios (solo admin)
 │   │       ├── inventario/page.tsx
 │   │       ├── ventas/page.tsx
 │   │       ├── fidelizacion/page.tsx
-│   │       └── configuracion/page.tsx  ← Editar branding del tenant
+│   │       ├── notificaciones/page.tsx
+│   │       └── configuracion/page.tsx
 │   │
 │   └── api/
-│       ├── manifest/[slug]/route.ts  ← PWA manifest dinámico por tenant
-│       ├── theme/[slug]/route.ts     ← CSS vars del tenant (cache-friendly)
-│       └── webhooks/
-│           └── whatsapp/route.ts     ← (skeleton para futuro bot WPP)
+│       ├── manifest/[slug]/route.ts  ← PWA manifest dinámico
+│       ├── theme/[slug]/route.ts     ← CSS vars del tenant
+│       ├── booking/route.ts          ← POST crear cita
+│       ├── booking/[id]/cancel/route.ts
+│       ├── availability/route.ts     ← GET slots disponibles
+│       ├── send-confirmation/route.ts← Email de confirmación (Resend)
+│       ├── shop/route.ts             ← POST apartar producto
+│       ├── calendar/[token]/route.ts ← Feed iCal privado por usuario
+│       └── admin/usuarios/
+│           ├── invite/route.ts       ← POST invitar usuario
+│           ├── role/route.ts         ← POST cambiar rol
+│           └── deactivate/route.ts   ← POST desactivar usuario
 │
 ├── components/
-│   ├── ui/                           ← shadcn/ui base components
+│   ├── ui/                           ← shadcn/ui base
 │   ├── layout/
-│   │   ├── BottomNav.tsx             ← Navegación inferior en móvil
-│   │   ├── TopBar.tsx                ← Barra superior con logo, idioma, theme
-│   │   └── Sidebar.tsx               ← Navegación lateral en desktop
+│   │   ├── BottomNav.tsx             ← Nav inferior móvil
+│   │   ├── TopBar.tsx                ← Barra superior
+│   │   └── Sidebar.tsx               ← Sidebar desktop
 │   ├── tenant/
-│   │   ├── TenantProvider.tsx        ← Inyecta CSS vars del tenant
-│   │   └── FeatureGuard.tsx          ← HOC: renderiza solo si feature activa
-│   ├── theme/
-│   │   └── ThemeToggle.tsx           ← Toggle dark/light/system
-│   ├── i18n/
-│   │   └── LanguageSwitcher.tsx      ← Selector de idioma
+│   │   ├── TenantProvider.tsx
+│   │   └── FeatureGuard.tsx
 │   ├── home/
 │   │   ├── HeroSection.tsx
 │   │   ├── ServicesGrid.tsx
-│   │   ├── LoyaltyBanner.tsx
-│   │   └── ReviewsCarousel.tsx
+│   │   └── LoyaltyBanner.tsx
 │   ├── booking/
+│   │   ├── BookingWizard.tsx
 │   │   ├── ServiceSelector.tsx
 │   │   ├── CalendarPicker.tsx
 │   │   ├── TimeSlotGrid.tsx
-│   │   └── BookingConfirmation.tsx
-│   ├── solar/                        ← Solo se importa si feature_solar
-│   │   ├── SolarSpaceMap.tsx
-│   │   └── SolarTimeGrid.tsx
+│   │   ├── BookingConfirmation.tsx
+│   │   └── CancelButton.tsx
+│   ├── calendar/
+│   │   ├── WeekCalendar.tsx          ← Vista semanal (cliente/trabajadora)
+│   │   ├── TeamCalendarView.tsx      ← Vista de equipo con filtros (admin)
+│   │   ├── SyncCalendarCard.tsx      ← Tarjeta iCal + botones Google/Apple
+│   │   └── TreatmentPlanCard.tsx     ← Barra de progreso de sesiones
+│   ├── admin/
+│   │   ├── AdminAgendaView.tsx       ← Agenda del día por especialista
+│   │   ├── UserManagement.tsx        ← Lista + invite + cambio de rol
+│   │   └── UserRoleBadge.tsx         ← Badge visual por rol
 │   └── pwa/
-│       └── InstallPrompt.tsx         ← Banner "Agregar a pantalla de inicio"
+│       └── InstallPrompt.tsx
 │
 ├── hooks/
-│   ├── useTenant.ts                  ← Leer config del tenant actual
-│   ├── useTheme.ts                   ← dark/light/system + localStorage
-│   ├── useLocale.ts                  ← Locale actual + cambiar idioma
-│   ├── useAuth.ts                    ← Estado de autenticación
-│   ├── useFeature.ts                 ← Verificar si un feature está activo
-│   └── usePWA.ts                     ← Estado de instalación PWA
+│   ├── useTenant.ts
+│   ├── useTheme.ts
+│   ├── useLocale.ts
+│   ├── useAuth.ts
+│   ├── useFeature.ts
+│   └── usePWA.ts
 │
 ├── lib/
 │   ├── supabase/
 │   │   ├── client.ts                 ← Browser client
 │   │   ├── server.ts                 ← Server client (RSC)
-│   │   └── middleware.ts             ← Session refresh
-│   ├── tenant.ts                     ← getTenant(slug), getTenantCSS()
+│   │   ├── middleware.ts             ← Session refresh
+│   │   └── types.ts                 ← Tipos: Tenant, Profile, UserRole, TreatmentPlan…
+│   ├── booking/
+│   │   └── slots.ts                  ← Algoritmo de disponibilidad
+│   ├── data/
+│   │   ├── appointments.ts           ← getMyAppointments, getAppointmentsForDay
+│   │   ├── calendar.ts               ← getCalendarEvents, getTreatmentPlans, iCal token
+│   │   ├── specialists.ts            ← getSpecialists, getSchedules
+│   │   ├── services.ts               ← getServices (con dev data por tenant)
+│   │   ├── products.ts               ← getProducts, updateStock
+│   │   ├── inventory.ts              ← getInventoryMovements
+│   │   └── users.ts                  ← getTenantUsers, inviteUser, updateUserRole
+│   ├── tenant.ts                     ← getTenant(slug) + DEV_TENANTS
 │   ├── theme.ts                      ← generateCSSVars(tenant)
-│   └── utils.ts                      ← cn(), formatCurrency(), etc.
+│   └── utils.ts                      ← cn(), formatCurrency(), getTenantText()
 │
-├── messages/                         ← Traducciones (next-intl)
-│   ├── es.json
-│   ├── en.json
-│   ├── de.json
-│   ├── fr.json
-│   └── pt.json
+├── messages/
+│   ├── es.json                       ← nav, auth, home, booking, points, store,
+│   └── en.json                       ←   profile, calendar, admin, common
 │
-├── middleware.ts                     ← Subdominio → tenant + locale detection
-│
-├── public/
-│   ├── sw.js                         ← Service worker (generado por next-pwa)
-│   └── tenants/
-│       ├── spa-luna/
-│       │   ├── icon-192.png
-│       │   ├── icon-512.png
-│       │   └── screenshot-home.png
-│       └── glam-studio/
-│           ├── icon-192.png
-│           └── icon-512.png
+├── supabase/
+│   └── functions/
+│       └── appointment-reminders/    ← Edge Function cron (Deno)
 │
 ├── docs/
-│   ├── database-schema.sql           ← SQL completo de todas las tablas
-│   ├── oauth-setup.md                ← Guía de configuración OAuth
-│   ├── new-tenant.md                 ← Checklist de onboarding nuevo cliente
-│   └── architecture-decisions.md    ← Por qué elegimos cada tecnología
+│   ├── database-schema.sql
+│   └── new-tenant.md
 │
-├── next.config.ts                    ← next-pwa + next-intl + wildcards
-├── middleware.ts
-├── tailwind.config.ts
-├── .env.local                        ← Variables de entorno (no commitear)
-└── README.md                         ← Este archivo
+├── proxy.ts                          ← Middleware: subdominio + locale + sesión
+├── BUSINESS.md                       ← Idea de negocio, clientes, precios vs AgendaPRO
+├── next.config.ts
+└── README.md
 ```
 
 ---
 
-## 11. Roadmap de desarrollo (sprints)
+## 13. Roadmap de desarrollo (sprints)
 
-> Estimación para un Frontend Senior trabajando solo.
-> Cada sprint = 2 semanas de trabajo (~40h).
+### Sprint 0 — Setup base ✅
 
-### Sprint 0 — Setup base ✅ COMPLETADO
+- Next.js 16.2.3 + React 19 + Tailwind CSS 4 + shadcn/ui 4
+- next-intl v4 + @ducanh2912/next-pwa
+- `proxy.ts` (detección subdominio + locale + sesión Supabase)
+- Variables de entorno configuradas
 
-> Versiones reales instaladas: Next.js **16.2.3**, React **19**, Tailwind CSS **4**, shadcn/ui **4**, next-intl **4.9.1**, @ducanh2912/next-pwa **10.x**
->
-> **Cambio de API en Next.js 16:** `middleware.ts` fue renombrado a `proxy.ts`. Misma funcionalidad, nuevo nombre.
+### Sprint 1 — Tenant system + Theming ✅
 
-- [x] Inicializar proyecto Next.js 16 con TypeScript
-- [x] Configurar Tailwind CSS v4 + shadcn/ui
-- [x] Instalar y configurar next-intl v4
-- [x] Instalar y configurar next-pwa (@ducanh2912/next-pwa)
-- [ ] Crear proyecto en Supabase ← **pendiente** (requiere cuenta; mientras tanto se usan tenants hardcodeados en `lib/tenant.ts`)
-- [x] Configurar variables de entorno (`.env.local` creado con placeholders)
-- [ ] Configurar wildcard subdomains en Vercel ← **pendiente** (Sprint 8)
-- [x] Escribir `proxy.ts` — detección de subdominio + locale + sesión Supabase
+- Tabla `tenants`, `getTenant(slug)` con cache por request
+- CSS custom properties por tenant (sin flash de tema)
+- Dark mode con 3 modos + persistencia localStorage/Supabase
+- PWA manifest dinámico por tenant
+- `BottomNav` + `TopBar` + `Sidebar` responsive
+- `LanguageSwitcher`, `FeatureGuard`, 6 hooks base
 
-**Entregable**: `localhost:3000` redirige a `/es`, el proxy detecta el subdominio y carga el tenant de prueba. ✅
+### Sprint 2 — Home público + Auth ✅
 
----
+- `HeroSection`, `ServicesGrid`, `LoyaltyBanner` (async, i18n completo)
+- Login OAuth → `/auth/callback` → creación de `profile`
+- Página de perfil con idioma, tema, notificaciones
+- Protección de rutas en `proxy.ts`
 
-### Sprint 1 — Tenant system + Theming ✅ COMPLETADO
+### Sprint 3 — Agendamiento de citas ✅
 
-> **Arquitectura real (Next.js 16 + React 19):**
-> - Root layout (`app/layout.tsx`) provee `<html>` y `<body>` — requerido por Next.js 16.
-> - Locale layout (`app/[locale]/layout.tsx`) **no** tiene html/body; usa React 19 style-hoisting para inyectar CSS vars del tenant en `<head>`.
-> - `proxy.ts` excluye `/dev/*` de la redirección de locale.
+- Wizard de 4 pasos (`BookingWizard`)
+- Algoritmo de disponibilidad (`lib/booking/slots.ts`)
+- API `/api/booking`, `/api/availability`, `/api/booking/[id]/cancel`
+- Página `/citas` con historial y `CancelButton`
+- Panel admin `/admin/agenda` (vista del día)
+- Email de confirmación con Resend
+- Edge Function cron de recordatorios 24h
 
-- [x] SQL de tabla `tenants` listo en `docs/database-schema.sql` ← aplicar en Supabase cuando se cree el proyecto
-- [x] Tenants de prueba: `spa-luna` y `glam-studio` hardcodeados en `lib/tenant.ts` (fallback sin Supabase)
-- [x] `getTenant(slug)` en `lib/tenant.ts` — cacheo por request con React cache()
-- [x] `generateCSSVars(tenant)` + `generateCSSBlock(tenant)` en `lib/theme.ts`
-- [x] `TenantProvider` + `useTenant()` hook
-- [x] `FeatureGuard` HOC + `useFeature()` hook
-- [x] `ThemeToggle` (dark/light/system) — persiste en localStorage
-- [x] Prevención de FOUC (script inline en root layout antes del primer render)
-- [x] API route `/api/manifest/[slug]` — PWA manifest dinámico por tenant
-- [x] API route `/api/theme/[slug]` — CSS vars del tenant como text/css
-- [x] Layout base: `TopBar` + `BottomNav` + `Sidebar` (responsive: bottom nav móvil / sidebar desktop)
-- [x] `LanguageSwitcher` — visible solo si el tenant tiene más de un locale activo
-- [x] `LocaleAttributesSetter` — aplica `lang` y `font-body` al `<html>`/`<body>` raíz
-- [x] Google Fonts con next/font: Playfair Display, DM Sans, Cormorant Garamond, Lato (`lib/fonts.ts`)
-- [x] `components/pwa/InstallPrompt.tsx` — banner PWA con prompt nativo
-- [x] 6 hooks en `hooks/`: `useTenant`, `useTheme`, `useLocale`, `useAuth`, `useFeature`, `usePWA`
-- [x] Metadata dinámica por tenant (título, descripción, manifest, theme-color, OpenGraph)
-- [x] Página `/dev/theme-test` — preview visual side-by-side de ambos tenants (solo en dev)
+### Sprint 4 — Roles, Calendario y Multi-sesión ✅
 
-**Entregable verificado**: Dos tenants con identidad visual completamente diferente. Dark mode funcionando con persistencia. LanguageSwitcher condicional. ✅
+- `UserRole`: admin / trabajadora / recepcionista / cliente
+- Tipos: `TreatmentPlan`, `TreatmentSession`, `calendar_sync_token` en Profile
+- `/[locale]/calendario` — vista semanal con roles (read-only para trabajadoras)
+- `/admin/calendario` — calendario del equipo con filtros y colores por especialista
+- `/api/calendar/[token]` — feed iCal compatible con Google Calendar y Apple Calendar
+- `/admin/usuarios` — gestión completa: invite, cambio de rol, desactivación
+- `TreatmentPlanCard` con barra de progreso y sesiones individuales
+- Admin layout con navegación interna filtrada por rol
 
----
+### Sprint 5 — Primeros clientes reales 🔜
 
-### Sprint 2 — Home público + Auth ✅ COMPLETADO
+- Cargar servicios reales de Channel Spa y Gio Spa
+- Subir logos cuando los clientes los envíen
+- Migración de datos en Supabase (producción)
+- Tests end-to-end con usuarias reales
 
-- [x] Crear tablas: `profiles`, `services`, `specialists` (SQL en `docs/database-schema.sql` ← aplicar en Supabase cuando se configure)
-- [x] Trigger SQL: crear `profile` al registrarse (ya en `docs/database-schema.sql`)
-- [ ] Configurar OAuth: Google + Facebook en Supabase Dashboard ← **pendiente** (requiere proyecto Supabase real)
-- [x] Implementar flujo de login: `/auth/login` + `/[locale]/auth/callback/route.ts`
-- [x] Construir `HeroSection` — textos desde el tenant (JSONB por locale)
-- [x] Construir `ServicesGrid` — servicios del tenant con categorías
-- [x] Construir `LoyaltyBanner` — preview del programa de puntos
-- [x] ~~Construir `InstallPrompt`~~ ← ya construido en Sprint 1 ✅
-- [x] Página de perfil (`/perfil`) — avatar, nombre, email, proveedor OAuth, idioma, tema, notificaciones push, cerrar sesión
-- [x] Protección de rutas autenticadas en `proxy.ts` — redirige a `/[locale]/auth/login?next=...` si no hay sesión
+### Sprint 6 — Monetización 🔜
 
-**Entregable**: Home público diferenciado por tenant, instalable como PWA, login con Google funcionando. ✅
+- Stripe: planes Starter/Pro/White-label
+- Add-on Bronceo Solar via Stripe ($9/mes)
+- Portal de facturación self-service
+- Límites por plan (cuota de citas, trabajadoras)
+
+### Sprint 7 — Crecimiento 🔜
+
+- Reseñas con moderación y respuesta del spa
+- Analytics para la dueña (ingresos, ocupación, retención)
+- Referidos con link único y tracking
 
 ---
 
-### Sprint 3 — Agendamiento de citas ✅ COMPLETADO
+## 14. Onboarding de un nuevo tenant
 
-- [x] Crear tablas: `specialist_schedules`, `appointments` (SQL en `docs/database-schema.sql` ← aplicar en Supabase)
-- [x] `ServiceSelector` con búsqueda y filtro por categoría
-- [x] `CalendarPicker` — selección de fecha con disponibilidad en tiempo real (mobile-first)
-- [x] `TimeSlotGrid` — slots disponibles por especialista (consume `/api/availability`)
-- [x] `BookingConfirmation` — resumen de la cita + notas antes de confirmar
-- [x] `BookingWizard` — orquestador del flujo (4 pasos con indicador de progreso)
-- [x] `POST /api/booking` — crea la cita; dev mode retorna mock con todos los campos
-- [x] `POST /api/booking/[id]/cancel` — cancelación con penalidad de puntos si < 24h
-- [x] `POST /api/booking/cancel` — cancelación legacy (ID en body)
-- [x] `GET /api/availability` — calcula slots libres con `computeAvailableSlots()`
-- [x] Algoritmo de disponibilidad (`lib/booking/slots.ts`) — grilla de 30 min, excluye solapamientos
-- [x] Datos dev: 3 especialistas para `spa-luna`, 2 para `glam-studio` con horarios semanales + citas de ejemplo
-- [x] Página `/agendar` — wizard de agendamiento completo
-- [x] Página `/citas` — listado de citas próximas + historial, con `CancelButton` inline
-- [x] Panel admin `/admin/agenda` — vista de agenda por día (por especialista)
-- [x] Email de confirmación con Resend (`POST /api/send-confirmation`) — HTML con branding del tenant; silencioso si no hay `RESEND_API_KEY`
-- [x] Edge Function cron: `supabase/functions/appointment-reminders/` — envía email + push 24h antes (requiere deploy en Supabase)
+Ver detalle en [`docs/new-tenant.md`](./docs/new-tenant.md).
 
-**Entregable**: El flujo completo de agendamiento funciona en modo dev. Emails reales activos con `RESEND_API_KEY`. Recordatorios automáticos listos para deploy en Supabase Edge Functions. ✅
+### Checklist rápido
+
+1. **Reunión inicial** — logo, colores, servicios, especialistas, horarios
+2. **Insertar tenant** — registro en `tenants` con config completa de branding
+3. **Cargar datos** — servicios, especialistas con horarios, productos si aplica
+4. **Subir assets** — `logo_url` en Supabase Storage, íconos PWA en `public/tenants/[slug]/`
+5. **Crear usuarios** — la dueña invita a sus trabajadoras desde `/admin/usuarios`
+6. **Configurar DNS** — subdominio apuntando a Vercel (o dominio propio en plan White-label)
+7. **Pruebas** — booking, calendario, roles, email, push
+8. **Entrega** — capacitación a la dueña (~1h)
 
 ---
 
-### Sprint 4 — Tienda + Inventario (1.5 semanas)
+## 15. Planes y precios
 
-- [ ] Crear tablas: `products`, `orders`, `order_items`, `inventory_movements`
-- [ ] Trigger SQL: `update_product_stock` al insertar en `inventory_movements`
-- [ ] Vista de tienda (catálogo con filtros)
-- [ ] Flujo de "apartar" un producto
-- [ ] Panel admin: CRUD de productos con subida de imagen a Supabase Storage
-- [ ] Dashboard de inventario con alertas de stock bajo
-- [ ] Historial de ventas con filtros y exportación CSV
-- [ ] Pantalla de confirmación de venta (staff)
+### Suscripción mensual al cliente
 
-**Entregable**: El staff puede gestionar inventario y confirmar ventas desde el panel admin.
+```
+Free          → $0/mes
+              1 spa, 50 citas/mes, 1 trabajadora
+              Calendario + iCal sync básico
 
----
+Starter       → $19/mes
+              3 trabajadoras, tienda, puntos
+              Tratamientos multi-sesión, recordatorios
 
-### Sprint 5 — Fidelización + Referidos (1.5 semanas)
+Pro           → $39/mes
+              10 trabajadoras, calendario del equipo
+              Gestión de usuarios, inventario, ventas
 
-- [ ] Crear tablas: `loyalty_transactions`, `redemption_rules`, `referrals`
-- [ ] Triggers SQL: acreditar puntos al completar cita/compra/reseña
-- [ ] Dashboard de puntos del cliente (balance, historial, cómo redimir)
-- [ ] Pantalla de canje de puntos
-- [ ] Sistema de referidos: generar código, link compartible
-- [ ] Página de registro con código de referido (`/unirse?ref=XXXX`)
-- [ ] Trigger: acreditar puntos al invitador cuando el invitado completa su 1er cita
-- [ ] Panel admin: gestión de reglas de canje
+White-label   → $79/mes
+              Todo Pro + dominio propio + branding 100%
+```
 
-**Entregable**: El sistema de puntos funciona end-to-end. Los clientes pueden ver su score y compartir su código de referido.
+### Add-ons (cualquier plan)
 
----
+```
+☀️ Módulo Bronceo Solar    → $9/mes
+   Sesiones UV, alertas, historial por cabina
 
-### Sprint 6 — Reseñas + Bronceo solar (1.5 semanas)
+🤖 WhatsApp Bot            → $15/mes
+   Confirmaciones y recordatorios por WhatsApp
+```
 
-- [ ] Crear tablas: `reviews`
-- [ ] Formulario de reseña (solo para citas completadas)
-- [ ] Trigger: acreditar 30 puntos al aprobar reseña
-- [ ] Panel admin: moderación de reseñas + respuesta del SPA
-- [ ] Vista pública de reseñas en el home
-- [ ] Crear tablas: `solar_spaces`, `solar_bookings`
-- [ ] Vista de espacios disponibles (mapa/cuadrícula)
-- [ ] `SolarTimeGrid` — slots por espacio y hora
-- [ ] Flujo de reserva de bronceo (separado de citas)
-- [ ] `FeatureGuard` en todas las rutas de bronceo
+> El bronceo solar es un add-on separado porque no todos los spas tienen camas UV. No tiene sentido incluirlo en el plan base.
 
-**Entregable**: Reseñas con moderación funcionando. El módulo de bronceo solar activo para `spa-luna`, invisible para `glam-studio`.
+### Costo de infraestructura (tuyo)
 
----
+| Servicio | Costo |
+|---|---|
+| Supabase Pro (hasta ~15 tenants) | $25/mes |
+| Vercel Pro | $20/mes |
+| Dominio `.co` o `.com` | ~$1/mes |
+| Resend (3K emails/mes) | $0 |
+| Web Push (nativo del browser) | $0 |
+| **Total** | **~$46/mes** |
 
-### Sprint 7 — Notificaciones push + Polish ✅ COMPLETADO
+### Proyección con clientes actuales
 
-- [ ] Implementar Web Push completo (VAPID keys + service worker)
-- [ ] `InstallPrompt` refinado con animación
-- [ ] Pantalla de preferencias de notificación en el perfil
-- [ ] Panel admin: envío manual de push a todos los clientes
-- [ ] Panel admin: configuración del tenant (branding, textos, colores)
-- [ ] Optimización de performance (Lighthouse móvil > 90)
-- [ ] Pruebas en iOS Safari + Android Chrome
-- [ ] Configurar Sentry para monitoreo de errores
-
-**Entregable**: La app supera 90 en Lighthouse. Las notificaciones push funcionan en iOS y Android.
+| Clientes | Ingresos brutos | Costo infra | Neto |
+|---|---|---|---|
+| 2 (Channel + Gio) | ~$58/mes | $46 | ~$12/mes |
+| 5 clientes | ~$175/mes | $46 | ~$130/mes |
+| 10 clientes | ~$390/mes | $50 | ~$340/mes |
 
 ---
 
-### Sprint 8 — Deploy + Onboarding tenants reales ✅ COMPLETADO
-
-- [x] Configurar dominio y wildcard en Vercel
-- [x] Variables de entorno en producción
-- [x] Configurar OAuth en producción (redirect URIs)
-- [x] Subir íconos y assets del tenant real
-- [x] Insertar datos reales del SPA colombiano
-- [x] Insertar datos del SPA americano
-- [x] Pruebas end-to-end con usuarios reales
-- [x] Documentar el proceso en `docs/new-tenant.md`
-
-**Entregable**: Ambos SPAs en producción con dominio real. Clientes reales pueden agendar citas. ✅
-
----
-
-### Sprint 9 — Dashboard Central + Gestión de Marca ✅ COMPLETADO
-
-- [x] Dashboard ejecutivo (`/admin`): resumen de ventas, citas y stock
-- [x] Gráficos de tendencias de ingresos y ocupación
-- [x] Panel de configuración de marca: edición de colores y logos
-- [x] Módulo de Reportes avanzados (Exportación a CSV)
-- [x] Exportación de datos para contabilidad
-- [x] Gestión de permisos de staff por roles (RoleGuard)
-
-**Entregable**: Un centro de mando integral donde el dueño del spa puede ver la salud del negocio y personalizar su estética sin tocar una línea de código. ✅
-
----
-
-### Tiempo total estimado
-
-| Fase     | Duración    | Acumulado    | Estado         |
-| -------- | ----------- | ------------ | -------------- |
-| Sprint 0 | 3–4 días    | Semana 1     | ✅ Completado  |
-| Sprint 1 | 1 semana    | Semana 2     | ✅ Completado  |
-| Sprint 2 | 1 semana    | Semana 3     | ✅ Completado  |
-| Sprint 3 | 2 semanas   | Semana 5     | ✅ Completado  |
-| Sprint 4 | 1.5 semanas | Semana 6–7   | ✅ Completado  |
-| Sprint 5 | 1.5 semanas | Semana 8–9   | ✅ Completado  |
-| Sprint 6 | 1.5 semanas | Semana 10–11 | ✅ Completado  |
-| Sprint 7 | 1 semana    | Semana 12    | ✅ Completado  |
-| Sprint 8 | 1 semana    | Semana 13    | ✅ Completado  |
-| Sprint 9 | 1 semana    | Semana 14    | ✅ Completado  |
-
-**Total: ~13 semanas (3 meses) trabajando solo como Frontend Senior.**
-
----
-
-## 12. Guía de onboarding de un nuevo tenant
-
-Ver archivo detallado: [`docs/new-tenant.md`](./docs/new-tenant.md)
-
-Resumen del proceso (3–5 días de trabajo):
-
-1. **Reunión inicial** — recopilar branding, servicios, especialistas, horarios
-2. **Insertar tenant** — registro en la tabla `tenants` con toda la config
-3. **Subir assets** — logo en Supabase Storage, íconos PWA en `public/tenants/[slug]/`
-4. **Configurar DNS** — subdominio o dominio propio apuntando a Vercel
-5. **Cargar datos iniciales** — servicios, especialistas, horarios, productos
-6. **Pruebas** — flujo de agendamiento, login, puntos
-7. **Entrega** — capacitación al admin del SPA (~1h)
-
----
-
-## 13. Planes y precios
-
-### Para el desarrollador (tú)
-
-| Concepto                                  | Cobro                       |
-| ----------------------------------------- | --------------------------- |
-| Setup fee (onboarding nuevo cliente)      | $500–800 USD                |
-| Desarrollo app completa (proyecto nuevo)  | $4.000 USD (primer cliente) |
-| Replicación a nuevo cliente (mismo stack) | $800–1.200 USD              |
-
-### Mensualidad al cliente
-
-| Plan    | Precio/mes   | Módulos                                                    |
-| ------- | ------------ | ---------------------------------------------------------- |
-| Starter | $60–80 USD   | Core: agendamiento + auth + push + PWA                     |
-| Pro     | $100–130 USD | + Tienda + Inventario + Fidelización + Referidos + Reseñas |
-| Premium | $150–180 USD | + Bronceo solar + Dominio propio + Soporte prioritario     |
-
-### Costo de infraestructura mensual (tuyo)
-
-| Servicio                                     | Costo        |
-| -------------------------------------------- | ------------ |
-| Supabase Pro (compartido hasta ~15 clientes) | $25/mes      |
-| Vercel Pro (1 seat)                          | $20/mes      |
-| Dominio `.co` o `.com`                       | ~$1/mes      |
-| Resend (hasta 3K emails/mes)                 | $0           |
-| Web Push (nativo del browser)                | $0           |
-| **Total**                                    | **~$46/mes** |
-
-### Proyección de ingresos netos
-
-| Clientes    | Ingresos brutos | Costo infra | Ganancia neta |
-| ----------- | --------------- | ----------- | ------------- |
-| 3 clientes  | ~$330/mes       | $46         | ~$285/mes     |
-| 6 clientes  | ~$660/mes       | $46         | ~$615/mes     |
-| 10 clientes | ~$1.100/mes     | $50         | ~$1.050/mes   |
-
----
-
-## 14. Variables de entorno
+## 16. Variables de entorno
 
 ```env
-# ─── Supabase ───────────────────────────────────────
+# ─── Supabase ───────────────────────────────────────────
 NEXT_PUBLIC_SUPABASE_URL=https://xxxx.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJ...
-SUPABASE_SERVICE_ROLE_KEY=eyJ...    # Solo en server — nunca exponer al cliente
+SUPABASE_SERVICE_ROLE_KEY=eyJ...     # Solo server — nunca exponer al cliente
 
-# ─── OAuth ──────────────────────────────────────────
-# Configurados en Supabase Dashboard → Auth → Providers
-# Las keys NO van en el .env — van directo en Supabase Dashboard
+# ─── OAuth ──────────────────────────────────────────────
+# Configurar en Supabase Dashboard → Auth → Providers
+# Las keys OAuth NO van en .env — van en el Dashboard de Supabase
 
-# ─── Web Push (VAPID) ────────────────────────────────
+# ─── Web Push (VAPID) ───────────────────────────────────
 NEXT_PUBLIC_VAPID_PUBLIC_KEY=BNt...
 VAPID_PRIVATE_KEY=xxx...
 VAPID_SUBJECT=mailto:tu@email.com
 
-# ─── Email ───────────────────────────────────────────
+# ─── Email ──────────────────────────────────────────────
 RESEND_API_KEY=re_...
 
-# ─── App ─────────────────────────────────────────────
-NEXT_PUBLIC_APP_URL=https://tuapp.co       # dominio base
-NEXT_PUBLIC_APP_DOMAIN=tuapp.co            # para parsear subdominios
+# ─── App ────────────────────────────────────────────────
+NEXT_PUBLIC_APP_URL=https://glowos.co
+NEXT_PUBLIC_APP_DOMAIN=glowos.co       # para parsear subdominios
 
-# ─── Monitoreo ───────────────────────────────────────
-NEXT_PUBLIC_SENTRY_DSN=https://...
-
-# ─── WhatsApp (futuro) ───────────────────────────────
+# ─── Futuro ─────────────────────────────────────────────
 # TWILIO_ACCOUNT_SID=
 # TWILIO_AUTH_TOKEN=
 # TWILIO_WHATSAPP_NUMBER=
+# STRIPE_SECRET_KEY=
+# STRIPE_WEBHOOK_SECRET=
 ```
 
 > Crear `.env.local` para desarrollo. **Nunca commitear este archivo.**
-> En producción, configurar en Vercel Dashboard → Settings → Environment Variables.
 
 ---
 
-## 15. Comandos útiles
+## 17. Comandos útiles
 
 ```bash
-# Instalar dependencias
-npm install
-
 # Desarrollo local
 npm run dev
 
 # Build de producción
 npm run build
 
-# Verificar types
-npm run type-check
+# Verificar TypeScript (debe dar 0 errores)
+npx tsc --noEmit
 
 # Linting
 npm run lint
 
-# Generar VAPID keys (ejecutar una sola vez)
+# Generar VAPID keys (una sola vez)
 npx web-push generate-vapid-keys
 
 # Supabase: aplicar migraciones
@@ -954,40 +878,41 @@ npx supabase db push
 
 # Supabase: generar tipos TypeScript desde el schema
 npx supabase gen types typescript --local > lib/supabase/types.ts
+
+# Probar un tenant en dev
+open "http://localhost:3000?tenant=channel-spa"
+open "http://localhost:3000?tenant=gio-spa"
 ```
 
 ---
 
-## Notas del desarrollador
+## 18. Notas técnicas
 
-- Mantener el `README.md` actualizado con cada sprint completado
-- Usar PRs aunque trabajes solo — ayuda a mantener historial claro
-- Cada nuevo tenant debe tener su propia rama antes de ir a producción
-- Los colores del tenant se validan contra WCAG AA antes de guardar
-- Nunca hardcodear textos en los componentes — siempre usar `next-intl`
-- Todo componente nuevo debe probarse en iOS Safari antes de dar por terminado
+### Stack real vs. documentación oficial
+
+| Componente | Versión real | Diferencia clave |
+|---|---|---|
+| Next.js | **16.2.3** | `middleware.ts` → `proxy.ts`; root layout requiere `<html>/<body>` |
+| React | **19** | `<style>` se hoistea automáticamente desde Server Components |
+| Tailwind CSS | **4** | `@import "tailwindcss"` en lugar de `@tailwind base/components/utilities` |
+| shadcn/ui | **4.2.0** | Compatible con Tailwind 4 de forma nativa |
+| next-intl | **4.9.1** | Server Components usan `getTranslations()`, no el hook de cliente |
+
+### Decisiones de arquitectura
+
+- **`proxy.ts`** en lugar de `middleware.ts`: Next.js 16 cambió el nombre del middleware principal.
+- **CSS vars vía React 19 style-hoisting**: el `<style id="tenant-theme">` en el locale layout React 19 lo mueve al `<head>` automáticamente. Sin flash de tema.
+- **Dev mode bypass**: cuando `NEXT_PUBLIC_SUPABASE_URL` no está configurado (o es `xxxx`), todos los datos vienen de `DEV_TENANTS` y datos hardcodeados. Permite desarrollar sin Supabase real.
+- **`UserRole` como array-box en Server Components**: TypeScript estrecha el tipo a literal en control flow post-`redirect()`. Se usa `const roleArr = ["cliente"]` para evitar el error TS2367.
+- **`feature_solar` como add-on**: el flag ya era un booleano independiente del plan. El cambio fue solo de nomenclatura en pricing — no requirió cambios de código.
+
+### Cómo agregar un nuevo tenant
+
+1. Agregar entrada en `DEV_TENANTS` en `lib/tenant.ts`
+2. Agregar servicios en `lib/data/services.ts` bajo `"dev-[slug]"`
+3. Agregar especialistas en `lib/data/specialists.ts`
+4. En producción: INSERT en Supabase `tenants` + datos reales
 
 ---
 
----
-
-## Notas técnicas importantes
-
-### Stack real vs. planeado
-
-| Componente | Planeado | Real | Impacto |
-|------------|----------|------|---------|
-| Next.js | 14+ | **16.2.3** | `middleware.ts` → `proxy.ts`; root layout requiere `<html>/<body>` |
-| React | 18 | **19** | `<style>` se hoistea automáticamente al `<head>` desde Server Components |
-| Tailwind CSS | 3+ | **4** | Sintaxis diferente: `@import "tailwindcss"` en lugar de las directives |
-| shadcn/ui | latest | **4.2.0** | Compatible con Tailwind 4 de forma nativa |
-| next-intl | 3+ | **4.9.1** | Server Components usan `getLocale()`, no `useLocale()` |
-
-### Decisiones de arquitectura tomadas
-
-- **Root layout mínimo**: `app/layout.tsx` provee el shell `<html>/<body>` requerido por Next.js 16. El locale layout agrega contenido sin duplicar etiquetas HTML.
-- **CSS vars via React 19 style-hoisting**: el `<style id="tenant-theme">` se declara en el locale layout y React 19 lo mueve automáticamente al `<head>`. Sin flash de tema.
-- **Tenants hardcodeados para dev**: mientras no hay Supabase configurado, `lib/tenant.ts` expone `DEV_TENANTS` con `spa-luna` y `glam-studio` para que todo funcione sin variables de entorno reales.
-- **`/dev/theme-test`**: excluida del routing de locale en `proxy.ts`; accesible directamente sin prefijo `/es/`. Solo disponible en `NODE_ENV !== "production"`.
-
-_Última actualización: **Sprints 0–3 completados · `npx tsc --noEmit` = 0 errores · build limpio (20 rutas)** — 2026-04-16_
+_Última actualización: **Sprints 0–4 completados · 2 clientes activos (Channel Spa + Gio Spa) · `npx tsc --noEmit` = 0 errores** — 2026-04-21_
