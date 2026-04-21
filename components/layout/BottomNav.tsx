@@ -6,6 +6,7 @@ import { useLocale, useTranslations } from "next-intl";
 import {
   Home,
   CalendarDays,
+  Calendar,
   ShoppingBag,
   Star,
   User,
@@ -42,6 +43,12 @@ export function BottomNav() {
       href: `/${locale}/agendar`,
       icon: CalendarDays,
       labelKey: "appointments",
+    },
+    {
+      key: "calendar",
+      href: `/${locale}/calendario`,
+      icon: Calendar,
+      labelKey: "calendar",
     },
     ...(hasStore
       ? [

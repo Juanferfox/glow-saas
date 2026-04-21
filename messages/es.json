@@ -2,6 +2,7 @@
   "nav": {
     "home": "Inicio",
     "appointments": "Citas",
+    "calendar": "Calendario",
     "store": "Tienda",
     "points": "Mis puntos",
     "profile": "Perfil",
@@ -97,6 +98,27 @@
     "referral": "Mi código de referido",
     "shareReferral": "Compartir",
     "referralStats": "Has invitado a {count} personas"
+  },
+  "calendar": {
+    "title": "Mi calendario",
+    "desc": "Visualiza y gestiona tus citas.",
+    "readOnly": "Solo lectura",
+    "readOnlyDesc": "Puedes ver tu agenda pero no modificar citas.",
+    "treatmentPlans": "Planes de tratamiento activos",
+    "teamTitle": "Calendario del equipo",
+    "teamDesc": "Vista completa de todas las especialistas y sus citas.",
+    "syncTitle": "Sincronizar calendario",
+    "noEvents": "Sin citas en este rango"
+  },
+  "admin": {
+    "usersTitle": "Gestión de usuarios",
+    "usersDesc": "Invita, gestiona roles y desactiva usuarios del spa.",
+    "roleAdmin": "Dueñas",
+    "roleWorker": "Trabajadoras",
+    "roleReceptionist": "Recepcionistas",
+    "roleClient": "Clientes",
+    "inviteSuccess": "¡Invitación enviada!",
+    "inviteError": "Error al enviar invitación"
   },
   "common": {
     "loading": "Cargando...",

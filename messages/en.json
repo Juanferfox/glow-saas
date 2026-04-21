@@ -2,6 +2,7 @@
   "nav": {
     "home": "Home",
     "appointments": "Appointments",
+    "calendar": "Calendar",
     "store": "Store",
     "points": "My points",
     "profile": "Profile",
@@ -97,6 +98,27 @@
     "referral": "My referral code",
     "shareReferral": "Share",
     "referralStats": "You have referred {count} people"
+  },
+  "calendar": {
+    "title": "My calendar",
+    "desc": "View and manage your appointments.",
+    "readOnly": "Read only",
+    "readOnlyDesc": "You can view your schedule but cannot modify appointments.",
+    "treatmentPlans": "Active treatment plans",
+    "teamTitle": "Team calendar",
+    "teamDesc": "Full view of all specialists and their appointments.",
+    "syncTitle": "Sync calendar",
+    "noEvents": "No appointments in this range"
+  },
+  "admin": {
+    "usersTitle": "User management",
+    "usersDesc": "Invite, manage roles and deactivate spa users.",
+    "roleAdmin": "Owners",
+    "roleWorker": "Workers",
+    "roleReceptionist": "Receptionists",
+    "roleClient": "Clients",
+    "inviteSuccess": "Invitation sent!",
+    "inviteError": "Failed to send invitation"
   },
   "common": {
     "loading": "Loading...",

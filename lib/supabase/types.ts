@@ -49,12 +49,21 @@ export type Tenant = {
   created_at: string;
 }
 
+/**
+ * Roles del sistema:
+ * - "admin"        → Dueña / propietaria: control total
+ * - "trabajadora"  → Especialista del spa: solo lectura de su agenda
+ * - "recepcionista"→ Recepcionista: gestiona citas, no configuración
+ * - "cliente"      → Cliente final: agenda, puntos, perfil
+ */
+export type UserRole = "admin" | "trabajadora" | "recepcionista" | "cliente";
+
 export type Profile = {
   id: string;
   tenant_id: string;
   full_name: string | null;
   avatar_url: string | null;
-  role: "cliente" | "recepcionista" | "admin";
+  role: UserRole;
   referral_code: string;
   referred_by: string | null;
   loyalty_points: number;
@@ -63,6 +72,8 @@ export type Profile = {
   notifications_promo: boolean;
   notifications_tips: boolean;
   push_subscription: Json | null;
+  /** Token único para el feed iCal privado (/api/calendar/[token].ics) */
+  calendar_sync_token: string | null;
   created_at: string;
 }
 
@@ -220,6 +231,42 @@ export type Review = {
   created_at: string;
 }
 
+/**
+ * Plan de tratamiento multi-sesión.
+ * Ej: "Lifting de pestañas – 6 sesiones".
+ */
+export type TreatmentPlan = {
+  id: string;
+  tenant_id: string;
+  client_id: string;
+  service_id: string;
+  /** Nombre del plan (legado free-text para mostrar en UI) */
+  name: Record<string, string>;
+  total_sessions: number;
+  completed_sessions: number;
+  notes: string | null;
+  started_at: string;
+  /** Fecha límite para completar el plan (null = sin vencimiento) */
+  expires_at: string | null;
+  active: boolean;
+  created_at: string;
+}
+
+export type TreatmentSessionStatus = "scheduled" | "completed" | "skipped" | "missed";
+
+export type TreatmentSession = {
+  id: string;
+  plan_id: string;
+  tenant_id: string;
+  appointment_id: string | null;
+  session_number: number;
+  status: TreatmentSessionStatus;
+  notes: string | null;
+  scheduled_at: string | null;
+  completed_at: string | null;
+  created_at: string;
+}
+
 export type FeatureFlag = keyof Pick<
   Tenant,
   | "feature_store"
@@ -338,6 +385,18 @@ export type Database = {
         Row: SystemNotification;
         Insert: Partial<SystemNotification> & { tenant_id: string; user_id: string; type: SystemNotification["type"]; title: Record<string, string>; content: Record<string, string> };
         Update: Partial<SystemNotification>;
+        Relationships: [];
+      };
+      treatment_plans: {
+        Row: TreatmentPlan;
+        Insert: Partial<TreatmentPlan> & { tenant_id: string; client_id: string; service_id: string; name: Record<string, string>; total_sessions: number };
+        Update: Partial<TreatmentPlan>;
+        Relationships: [];
+      };
+      treatment_sessions: {
+        Row: TreatmentSession;
+        Insert: Partial<TreatmentSession> & { plan_id: string; tenant_id: string; session_number: number };
+        Update: Partial<TreatmentSession>;
         Relationships: [];
       };
     };
