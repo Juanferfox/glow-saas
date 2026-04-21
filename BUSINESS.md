@@ -63,14 +63,49 @@
 
 ---
 
+## Clientes activos
+
+| Spa | País | Moneda | Plan | Estado |
+|---|---|---|---|---|
+| **Channel Spa** | Colombia 🇨🇴 | COP | Pro | Activo — servicios en proceso de carga |
+| **Gio Spa** | USA 🇺🇸 | USD | Starter | Activo — servicios en proceso de carga |
+
+> Logos pendientes — se instalarán cuando los clientes los envíen.  
+> Servicios son placeholder hasta recibir la lista oficial de cada spa.
+
+---
+
 ## Modelo de negocio
 
 ```
-Free tier     → 1 tenant, hasta 50 citas/mes, sin tienda     → $0
-Starter       → Tienda + puntos + 3 trabajadoras             → $19/mes
-Pro           → Multi-sucursal + sincronización calendario   → $49/mes
-White-label   → Dominio propio + branding completo           → $99/mes
+Free          → 1 spa, 50 citas/mes, 1 trabajadora,
+                calendario básico                           → $0/mes
+
+Starter       → 3 trabajadoras, tienda, programa de puntos,
+                calendario + iCal sync, tratamientos multi-sesión,
+                recordatorios automáticos                   → $19/mes
+
+Pro           → 10 trabajadoras, multi-sucursal,
+                calendario de equipo, gestión de usuarios,
+                inventario, historial de ventas             → $39/mes
+
+White-label   → Todo Pro + dominio propio,
+                branding 100% personalizado,
+                soporte prioritario                         → $79/mes
 ```
+
+### Add-ons (se contratan por separado, cualquier plan)
+
+```
+☀️  Módulo de Bronceo Solar   → contador de sesiones UV, alertas,
+                                historial por cabina          → $9/mes
+🤖  WhatsApp Bot              → confirmaciones y recordatorios
+                                por WhatsApp                  → $15/mes
+```
+
+> **¿Por qué solar es add-on y no parte del plan?**  
+> No todos los spas tienen camas UV. Es un equipo especializado que no tiene
+> sentido cobrar a quien no lo usa. Se activa por tenant bajo demanda.
 
 ---
 
@@ -88,20 +123,28 @@ White-label   → Dominio propio + branding completo           → $99/mes
 - Edge Function de recordatorios 24h
 - Página `/citas` del cliente
 
-### 🔄 Sprint 4 — Roles y Calendario
-- Roles: dueña / trabajadora / cliente
-- Panel de gestión de usuarias (dueña)
-- Calendario interno con vista de equipo
-- Vista solo-lectura para trabajadoras
-- Sincronización Google Calendar / Apple Calendar (iCal)
-- Tratamientos multi-sesión con progreso
+### ✅ Sprint 4 — Roles y Calendario
+- Roles: dueña (`admin`) / trabajadora / recepcionista / cliente
+- Panel de gestión de usuarias con invite por email
+- Calendario semanal propio para clientes y trabajadoras (read-only)
+- Calendario de equipo con filtro por especialista y colores
+- Sincronización Google Calendar / Apple Calendar (feed iCal privado)
+- Tratamientos multi-sesión: `TreatmentPlan` + `TreatmentSession` + barra de progreso
+- Módulo de bronceo convertido a **add-on** separado
 
-### 🔜 Sprint 5 — Monetización
-- Stripe para planes Starter/Pro
-- Portal de facturación
-- Límites por plan
+### 🔜 Sprint 5 — Primeros clientes reales
+- Cargar servicios reales de Channel Spa y Gio Spa
+- Subir logos de ambos spas
+- Migración de datos en Supabase
+- Tests de booking end-to-end con usuarios reales
 
-### 🔜 Sprint 6 — Crecimiento
-- Sistema de reseñas con aprobación
-- Referidos con link único
-- Analytics para la dueña (ingresos, ocupación, retención)
+### 🔜 Sprint 6 — Monetización
+- Stripe para planes Starter/Pro/White-label
+- Add-on Bronceo Solar vía Stripe
+- Portal de facturación self-service
+- Límites por plan (cuota de citas, trabajadoras)
+
+### 🔜 Sprint 7 — Crecimiento
+- Sistema de reseñas con aprobación y respuesta del spa
+- Analytics para la dueña (ingresos, ocupación, retención, NPS)
+- Referidos con link único y tracking

@@ -44,7 +44,12 @@ export type Tenant = {
   points_per_purchase: number;
   referral_bonus_pts: number;
   cancellation_penalty: number;
-  plan: "starter" | "pro" | "premium";
+  /**
+   * Plan de suscripción del tenant.
+   * "white_label" reemplaza a "premium" (mantenido por compatibilidad).
+   * feature_solar es un add-on independiente del plan.
+   */
+  plan: "free" | "starter" | "pro" | "white_label" | "premium";
   active: boolean;
   created_at: string;
 }

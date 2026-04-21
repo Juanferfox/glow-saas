@@ -48,6 +48,90 @@ const DEV_TENANTS: Record<string, Tenant> = {
     active: true,
     created_at: new Date().toISOString(),
   },
+  // ── Channel Spa — Colombia ────────────────────────────────────────────────
+  "channel-spa": {
+    id: "dev-channel-spa",
+    slug: "channel-spa",
+    name: "Channel Spa",
+    default_locale: "es",
+    active_locales: ["es"],
+    currency: "COP",
+    timezone: "America/Bogota",
+    logo_url: null,                         // TODO: agregar logo cuando esté listo
+    brand_color_primary: "#c87e9a",         // rosa palo suave
+    brand_color_bg: "#140f11",              // negro cálido con tinte ciruela
+    brand_color_text: "#f9ece8",            // crema rosado
+    brand_color_surface: "#231519",         // marrón ciruela oscuro
+    brand_color_border: "#3a2228",          // ciruela apagado
+    brand_color_dark_bg: "#0e0a0b",
+    brand_color_dark_surface: "#1a0f12",
+    brand_color_dark_text: "#f9ece8",
+    brand_color_dark_border: "#2e1a1f",
+    brand_font_heading: "Georgia, 'Times New Roman', serif",
+    brand_font_body: "system-ui, -apple-system, sans-serif",
+    brand_radius: "10px",
+    hero_headline: { es: "Tu ritual de belleza, perfecto" },
+    hero_subtext:  { es: "Tratamientos exclusivos para realzar tu esencia natural" },
+    hero_cta:      { es: "Reservar cita" },
+    feature_store: true,
+    feature_inventory: true,
+    feature_loyalty: true,
+    feature_referrals: true,
+    feature_reviews: true,
+    feature_solar: false,                   // no solicitado
+    feature_sales_history: true,
+    feature_whatsapp_bot: false,
+    points_per_service: 100,
+    points_per_purchase: 1,
+    referral_bonus_pts: 200,
+    cancellation_penalty: 50,
+    plan: "pro",
+    active: true,
+    created_at: new Date().toISOString(),
+  },
+
+  // ── Gio Spa — USA ─────────────────────────────────────────────────────────
+  "gio-spa": {
+    id: "dev-gio-spa",
+    slug: "gio-spa",
+    name: "Gio Spa",
+    default_locale: "en",
+    active_locales: ["en", "es"],
+    currency: "USD",
+    timezone: "America/New_York",
+    logo_url: null,                         // TODO: agregar logo cuando esté listo
+    brand_color_primary: "#6b9e6f",         // verde salvia
+    brand_color_bg: "#0e1410",              // verde bosque muy oscuro
+    brand_color_text: "#eef5ef",            // blanco con tinte verde
+    brand_color_surface: "#18221a",         // verde oscuro profundo
+    brand_color_border: "#253e27",          // verde musgo
+    brand_color_dark_bg: "#090d09",
+    brand_color_dark_surface: "#111911",
+    brand_color_dark_text: "#eef5ef",
+    brand_color_dark_border: "#1c2e1e",
+    brand_font_heading: "'Cormorant Garamond', Georgia, serif",
+    brand_font_body: "'DM Sans', system-ui, sans-serif",
+    brand_radius: "6px",
+    hero_headline: { en: "Restore. Renew. Glow.", es: "Restaura. Renueva. Brilla." },
+    hero_subtext:  { en: "Holistic spa treatments crafted for your well-being", es: "Tratamientos holísticos diseñados para tu bienestar" },
+    hero_cta:      { en: "Book a session", es: "Reservar" },
+    feature_store: true,
+    feature_inventory: true,
+    feature_loyalty: true,
+    feature_referrals: true,
+    feature_reviews: true,
+    feature_solar: false,                   // add-on no contratado aún
+    feature_sales_history: true,
+    feature_whatsapp_bot: false,
+    points_per_service: 100,
+    points_per_purchase: 1,
+    referral_bonus_pts: 200,
+    cancellation_penalty: 50,
+    plan: "starter",
+    active: true,
+    created_at: new Date().toISOString(),
+  },
+
   "glam-studio": {
     id: "dev-glam-studio",
     slug: "glam-studio",

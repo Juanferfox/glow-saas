@@ -11,6 +11,20 @@ const DEV_SPECIALISTS: Record<string, Specialist[]> = {
     { id: "sl-sp-2", tenant_id: "dev-spa-luna", profile_id: null, name: "Camila Torres",    bio: { es: "Masajista terapéutica certificada" },                               avatar_url: null, services: ["sl-2","sl-1"], active: true, created_at: "2024-01-01" },
     { id: "sl-sp-3", tenant_id: "dev-spa-luna", profile_id: null, name: "Isabella Mora",    bio: { es: "Experta en nail art y tratamientos de uñas" },                      avatar_url: null, services: ["sl-3","sl-4"], active: true, created_at: "2024-01-01" },
   ],
+  // ── Channel Spa ────────────────────────────────────────────────────────────
+  "dev-channel-spa": [
+    { id: "cs-sp-1", tenant_id: "dev-channel-spa", profile_id: null, name: "Sofía Restrepo",  bio: { es: "Especialista en tratamientos faciales y lifting con 6 años de experiencia" }, avatar_url: null, services: ["cs-1","cs-7"], active: true, created_at: "2024-01-01" },
+    { id: "cs-sp-2", tenant_id: "dev-channel-spa", profile_id: null, name: "Mariana Castillo", bio: { es: "Masajista certificada en técnicas suecas y tejido profundo" },               avatar_url: null, services: ["cs-2","cs-3"], active: true, created_at: "2024-01-01" },
+    { id: "cs-sp-3", tenant_id: "dev-channel-spa", profile_id: null, name: "Daniela Ospina",   bio: { es: "Técnica en uñas con especialización en semipermanente" },                    avatar_url: null, services: ["cs-4","cs-5"], active: true, created_at: "2024-01-01" },
+  ],
+
+  // ── Gio Spa ────────────────────────────────────────────────────────────────
+  "dev-gio-spa": [
+    { id: "gi-sp-1", tenant_id: "dev-gio-spa", profile_id: null, name: "Giovanna Ferrara", bio: { en: "Lead esthetician specializing in facial treatments and wellness", es: "Esteticista líder especializada en tratamientos faciales" }, avatar_url: null, services: ["gi-1","gi-6","gi-7"], active: true, created_at: "2024-01-01" },
+    { id: "gi-sp-2", tenant_id: "dev-gio-spa", profile_id: null, name: "Mia Chen",         bio: { en: "Certified massage therapist, Swedish and hot stone specialist",   es: "Masajista certificada en sueco y piedras calientes"          }, avatar_url: null, services: ["gi-2","gi-3","gi-8"], active: true, created_at: "2024-01-01" },
+    { id: "gi-sp-3", tenant_id: "dev-gio-spa", profile_id: null, name: "Valeria Santos",   bio: { en: "Nail technician and lash/brow specialist",                        es: "Técnica en uñas y especialista en cejas/pestañas"          }, avatar_url: null, services: ["gi-4","gi-5","gi-6"], active: true, created_at: "2024-01-01" },
+  ],
+
   "dev-glam-studio": [
     { id: "gs-sp-1", tenant_id: "dev-glam-studio", profile_id: null, name: "Alex Ramírez",  bio: { en: "Senior stylist with 10 years in the industry", es: "Estilista senior con 10 años en la industria" }, avatar_url: null, services: ["gs-1","gs-2","gs-3","gs-4"], active: true, created_at: "2024-01-01" },
     { id: "gs-sp-2", tenant_id: "dev-glam-studio", profile_id: null, name: "Sofia Nails",   bio: { en: "Nail art specialist", es: "Especialista en nail art" },              avatar_url: null, services: ["gs-5"], active: true, created_at: "2024-01-01" },
@@ -52,8 +66,10 @@ function buildSchedules(
 }
 
 const DEV_SCHEDULES: Record<string, SpecialistSchedule[]> = {
-  "dev-spa-luna":    buildSchedules("dev-spa-luna",    DEV_SPECIALISTS["dev-spa-luna"]!),
-  "dev-glam-studio": buildSchedules("dev-glam-studio", DEV_SPECIALISTS["dev-glam-studio"]!),
+  "dev-spa-luna":     buildSchedules("dev-spa-luna",     DEV_SPECIALISTS["dev-spa-luna"]!),
+  "dev-channel-spa":  buildSchedules("dev-channel-spa",  DEV_SPECIALISTS["dev-channel-spa"]!),
+  "dev-gio-spa":      buildSchedules("dev-gio-spa",      DEV_SPECIALISTS["dev-gio-spa"]!),
+  "dev-glam-studio":  buildSchedules("dev-glam-studio",  DEV_SPECIALISTS["dev-glam-studio"]!),
 };
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
