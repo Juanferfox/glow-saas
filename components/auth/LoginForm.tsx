@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { cn } from "@/lib/utils";
 import type { Tenant } from "@/lib/supabase/types";
@@ -15,37 +16,94 @@ interface LoginFormProps {
 const ERROR_MESSAGES: Record<string, string> = {
   auth_callback_error: "Ocurrió un error al iniciar sesión. Intenta de nuevo.",
   access_denied: "Acceso denegado. Cierra sesión en Google e inténtalo de nuevo.",
+  invalid_credentials: "Correo o contraseña incorrectos.",
+  email_not_confirmed: "Confirma tu correo antes de iniciar sesión.",
 };
 
-/**
- * Formulario de login con OAuth.
- * Soporta Google y Facebook (los que estén habilitados en Supabase).
- */
+const HAS_SUPABASE =
+  !!process.env.NEXT_PUBLIC_SUPABASE_URL &&
+  !process.env.NEXT_PUBLIC_SUPABASE_URL.includes("xxxx");
+
+type Mode = "login" | "register";
+
 export function LoginForm({ locale, tenant, errorCode, next }: LoginFormProps) {
-  const [loading, setLoading] = useState<string | null>(null);
-  const supabase = createClient();
+  const router = useRouter();
+  const [oauthLoading, setOauthLoading] = useState<string | null>(null);
+  const [emailLoading, setEmailLoading] = useState(false);
+  const [devLoading, setDevLoading] = useState(false);
+  const [mode, setMode] = useState<Mode>("login");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [name, setName] = useState("");
+  const [formError, setFormError] = useState<string | null>(null);
+  const [successMsg, setSuccessMsg] = useState<string | null>(null);
+
+  const supabase = HAS_SUPABASE ? createClient() : null;
 
   const redirectTo =
     typeof window !== "undefined"
       ? `${window.location.origin}/${locale}/auth/callback${next ? `?next=${encodeURIComponent(next)}` : ""}`
       : `/${locale}/auth/callback`;
 
+  const destination = next ?? `/${locale}`;
+
   async function handleOAuth(provider: "google" | "facebook") {
-    setLoading(provider);
+    if (!supabase) return;
+    setOauthLoading(provider);
     const { error } = await supabase.auth.signInWithOAuth({
       provider,
       options: {
         redirectTo,
-        queryParams: {
-          // Pasar el tenant_slug para el trigger de creación de profile
-          ...(tenant && { tenant_slug: tenant.slug }),
-        },
+        queryParams: tenant ? { tenant_slug: tenant.slug } : {},
       },
     });
-    if (error) setLoading(null);
+    if (error) setOauthLoading(null);
   }
 
-  const errorMessage = errorCode ? ERROR_MESSAGES[errorCode] ?? "Error al iniciar sesión." : null;
+  async function handleEmail(e: React.FormEvent) {
+    e.preventDefault();
+    if (!supabase) return;
+    setFormError(null);
+    setSuccessMsg(null);
+    setEmailLoading(true);
+
+    if (mode === "register") {
+      const { error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: { full_name: name },
+          emailRedirectTo: redirectTo,
+        },
+      });
+      if (error) {
+        setFormError(ERROR_MESSAGES[error.message] ?? error.message);
+      } else {
+        setSuccessMsg("Revisa tu correo para confirmar tu cuenta.");
+      }
+    } else {
+      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      if (error) {
+        setFormError(ERROR_MESSAGES["invalid_credentials"]);
+      } else {
+        router.push(destination);
+        router.refresh();
+      }
+    }
+    setEmailLoading(false);
+  }
+
+  async function handleDevLogin() {
+    setDevLoading(true);
+    await fetch("/api/dev-auth", { method: "POST" });
+    const dest = next
+      ? next
+      : `/${locale}${tenant ? `?tenant=${tenant.slug}` : ""}`;
+    router.push(dest);
+    router.refresh();
+  }
+
+  const errorMessage = formError ?? (errorCode ? (ERROR_MESSAGES[errorCode] ?? "Error al iniciar sesión.") : null);
 
   return (
     <div className="flex min-h-[80vh] items-center justify-center px-4 py-16">
@@ -55,8 +113,8 @@ export function LoginForm({ locale, tenant, errorCode, next }: LoginFormProps) {
           "bg-[var(--brand-surface)] p-8 shadow-xl"
         )}
       >
-        {/* Logo / nombre del tenant */}
-        <div className="mb-8 text-center">
+        {/* Encabezado */}
+        <div className="mb-6 text-center">
           <h1
             className="text-2xl font-bold text-[var(--brand-text)]"
             style={{ fontFamily: "var(--font-heading)" }}
@@ -64,63 +122,179 @@ export function LoginForm({ locale, tenant, errorCode, next }: LoginFormProps) {
             {tenant?.name ?? "SPA"}
           </h1>
           <p className="mt-2 text-sm text-[var(--brand-text)] opacity-60">
-            Inicia sesión para agendar citas y acumular puntos
+            {mode === "login"
+              ? "Inicia sesión para agendar citas y acumular puntos"
+              : "Crea tu cuenta y empieza a disfrutar nuestros servicios"}
           </p>
         </div>
 
-        {/* Error */}
+        {/* Error / éxito */}
         {errorMessage && (
-          <div className="mb-6 rounded-xl border border-red-500/20 bg-red-500/10 px-4 py-3">
-            <p className="text-sm text-red-400">{errorMessage}</p>
+          <div className="mb-4 rounded-xl border border-red-500/20 bg-red-500/10 px-4 py-3">
+            <p className="text-sm text-red-500">{errorMessage}</p>
+          </div>
+        )}
+        {successMsg && (
+          <div className="mb-4 rounded-xl border border-green-500/20 bg-green-500/10 px-4 py-3">
+            <p className="text-sm text-green-600">{successMsg}</p>
           </div>
         )}
 
-        {/* Botones OAuth */}
-        <div className="space-y-3">
-          {/* Google */}
-          <button
-            id="login-google-btn"
-            onClick={() => handleOAuth("google")}
-            disabled={!!loading}
-            className={cn(
-              "flex w-full items-center justify-center gap-3 rounded-xl border border-[var(--brand-border)]",
-              "bg-white px-4 py-3 text-sm font-semibold text-zinc-800 shadow-sm",
-              "transition-all duration-200 hover:shadow-md hover:-translate-y-0.5",
-              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand-primary)]",
-              "disabled:opacity-50 disabled:cursor-not-allowed disabled:translate-y-0"
-            )}
-          >
-            {loading === "google" ? (
-              <span className="h-5 w-5 animate-spin rounded-full border-2 border-zinc-300 border-t-zinc-600" />
-            ) : (
-              <GoogleIcon />
-            )}
-            Continuar con Google
-          </button>
+        {/* ── DEV MODE ── */}
+        {!HAS_SUPABASE && (
+          <div className="space-y-4">
+            <div className="rounded-xl border border-dashed border-[var(--brand-border)] bg-[var(--brand-bg)] px-4 py-3 text-center">
+              <p className="text-xs font-semibold uppercase tracking-widest text-[var(--brand-primary)] opacity-70">
+                Modo desarrollo
+              </p>
+              <p className="mt-1 text-xs text-[var(--brand-text)] opacity-50">
+                Supabase no está configurado. Usa la sesión de prueba.
+              </p>
+            </div>
 
-          {/* Facebook */}
-          <button
-            id="login-facebook-btn"
-            onClick={() => handleOAuth("facebook")}
-            disabled={!!loading}
-            className={cn(
-              "flex w-full items-center justify-center gap-3 rounded-xl",
-              "bg-[#1877F2] px-4 py-3 text-sm font-semibold text-white shadow-sm",
-              "transition-all duration-200 hover:bg-[#166FE5] hover:shadow-md hover:-translate-y-0.5",
-              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1877F2]/50",
-              "disabled:opacity-50 disabled:cursor-not-allowed disabled:translate-y-0"
-            )}
-          >
-            {loading === "facebook" ? (
-              <span className="h-5 w-5 animate-spin rounded-full border-2 border-blue-300 border-t-white" />
-            ) : (
-              <FacebookIcon />
-            )}
-            Continuar con Facebook
-          </button>
-        </div>
+            <button
+              onClick={handleDevLogin}
+              disabled={devLoading}
+              className={cn(
+                "flex w-full items-center justify-center gap-2 rounded-xl py-3 text-sm font-semibold text-white shadow",
+                "transition-all duration-200 hover:-translate-y-0.5 hover:opacity-90",
+                "disabled:opacity-50 disabled:cursor-not-allowed disabled:translate-y-0"
+              )}
+              style={{ backgroundColor: "var(--brand-primary)" }}
+            >
+              {devLoading ? (
+                <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/40 border-t-white" />
+              ) : (
+                "✦ Entrar como cliente de prueba"
+              )}
+            </button>
+          </div>
+        )}
 
-        {/* Nota de privacidad */}
+        {/* ── PRODUCCIÓN: email/password + OAuth ── */}
+        {HAS_SUPABASE && (
+          <>
+            {/* Tabs login / register */}
+            <div className="mb-5 flex rounded-xl border border-[var(--brand-border)] p-1">
+              {(["login", "register"] as Mode[]).map((m) => (
+                <button
+                  key={m}
+                  onClick={() => { setMode(m); setFormError(null); setSuccessMsg(null); }}
+                  className={cn(
+                    "flex-1 rounded-lg py-2 text-sm font-semibold transition-all duration-150",
+                    mode === m
+                      ? "bg-[var(--brand-primary)] text-white shadow-sm"
+                      : "text-[var(--brand-text)] opacity-50 hover:opacity-80"
+                  )}
+                >
+                  {m === "login" ? "Iniciar sesión" : "Crear cuenta"}
+                </button>
+              ))}
+            </div>
+
+            {/* Formulario email/password */}
+            <form onSubmit={handleEmail} className="space-y-3">
+              {mode === "register" && (
+                <input
+                  type="text"
+                  placeholder="Nombre completo"
+                  value={name}
+                  onChange={e => setName(e.target.value)}
+                  required
+                  className={cn(
+                    "w-full rounded-xl border border-[var(--brand-border)] px-4 py-3 text-sm",
+                    "bg-[var(--brand-bg)] text-[var(--brand-text)] placeholder:opacity-40",
+                    "focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)]"
+                  )}
+                />
+              )}
+              <input
+                type="email"
+                placeholder="Correo electrónico"
+                value={email}
+                onChange={e => setEmail(e.target.value)}
+                required
+                className={cn(
+                  "w-full rounded-xl border border-[var(--brand-border)] px-4 py-3 text-sm",
+                  "bg-[var(--brand-bg)] text-[var(--brand-text)] placeholder:opacity-40",
+                  "focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)]"
+                )}
+              />
+              <input
+                type="password"
+                placeholder="Contraseña"
+                value={password}
+                onChange={e => setPassword(e.target.value)}
+                required
+                minLength={6}
+                className={cn(
+                  "w-full rounded-xl border border-[var(--brand-border)] px-4 py-3 text-sm",
+                  "bg-[var(--brand-bg)] text-[var(--brand-text)] placeholder:opacity-40",
+                  "focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)]"
+                )}
+              />
+              <button
+                type="submit"
+                disabled={emailLoading}
+                className={cn(
+                  "w-full rounded-xl py-3 text-sm font-semibold text-white shadow",
+                  "transition-all duration-200 hover:-translate-y-0.5 hover:opacity-90",
+                  "disabled:opacity-50 disabled:cursor-not-allowed disabled:translate-y-0"
+                )}
+                style={{ backgroundColor: "var(--brand-primary)" }}
+              >
+                {emailLoading
+                  ? <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-white/40 border-t-white" />
+                  : mode === "login" ? "Iniciar sesión" : "Crear cuenta"}
+              </button>
+            </form>
+
+            {/* Divisor */}
+            <div className="my-5 flex items-center gap-3">
+              <div className="h-px flex-1 bg-[var(--brand-border)]" />
+              <span className="text-xs text-[var(--brand-text)] opacity-30">o continúa con</span>
+              <div className="h-px flex-1 bg-[var(--brand-border)]" />
+            </div>
+
+            {/* OAuth */}
+            <div className="space-y-3">
+              <button
+                id="login-google-btn"
+                onClick={() => handleOAuth("google")}
+                disabled={!!oauthLoading}
+                className={cn(
+                  "flex w-full items-center justify-center gap-3 rounded-xl border border-[var(--brand-border)]",
+                  "bg-white px-4 py-3 text-sm font-semibold text-zinc-800 shadow-sm",
+                  "transition-all duration-200 hover:shadow-md hover:-translate-y-0.5",
+                  "disabled:opacity-50 disabled:cursor-not-allowed disabled:translate-y-0"
+                )}
+              >
+                {oauthLoading === "google"
+                  ? <span className="h-5 w-5 animate-spin rounded-full border-2 border-zinc-300 border-t-zinc-600" />
+                  : <GoogleIcon />}
+                Continuar con Google
+              </button>
+
+              <button
+                id="login-facebook-btn"
+                onClick={() => handleOAuth("facebook")}
+                disabled={!!oauthLoading}
+                className={cn(
+                  "flex w-full items-center justify-center gap-3 rounded-xl",
+                  "bg-[#1877F2] px-4 py-3 text-sm font-semibold text-white shadow-sm",
+                  "transition-all duration-200 hover:bg-[#166FE5] hover:shadow-md hover:-translate-y-0.5",
+                  "disabled:opacity-50 disabled:cursor-not-allowed disabled:translate-y-0"
+                )}
+              >
+                {oauthLoading === "facebook"
+                  ? <span className="h-5 w-5 animate-spin rounded-full border-2 border-blue-300 border-t-white" />
+                  : <FacebookIcon />}
+                Continuar con Facebook
+              </button>
+            </div>
+          </>
+        )}
+
         <p className="mt-6 text-center text-xs text-[var(--brand-text)] opacity-40 leading-relaxed">
           Al continuar aceptas que guardemos tu nombre y correo para gestionar tus citas.
           No compartimos tu información con terceros.

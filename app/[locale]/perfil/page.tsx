@@ -26,19 +26,20 @@ interface PageProps {
 export default async function PerfilPage({ params }: PageProps) {
   const { locale } = await params;
 
-  // Verificar sesión
+  // Verificar sesión + cargar tenant (se necesita el slug para el redirect)
   const supabase = await createClient();
+  const headersList = await headers();
+  const tenantSlug = headersList.get("x-tenant-slug");
+
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
   if (!user) {
-    redirect(`/${locale}/auth/login?next=/${locale}/perfil`);
+    const tenantParam = tenantSlug ? `&tenant=${tenantSlug}` : "";
+    redirect(`/${locale}/auth/login?next=/${locale}/perfil${tenantParam}`);
   }
 
-  // Cargar tenant para branding
-  const headersList = await headers();
-  const tenantSlug = headersList.get("x-tenant-slug");
   const tenant = tenantSlug ? await getTenant(tenantSlug) : null;
 
   // Datos del usuario
@@ -244,7 +245,7 @@ export default async function PerfilPage({ params }: PageProps) {
                 Conectado vía {provider}
               </p>
             </div>
-            <SignOutButton locale={locale} />
+            <SignOutButton locale={locale} tenantSlug={tenant?.slug ?? undefined} />
           </div>
         </div>
       </section>

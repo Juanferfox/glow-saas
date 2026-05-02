@@ -6,8 +6,13 @@ import { LogOut } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { cn } from "@/lib/utils";
 
+const HAS_SUPABASE =
+  !!process.env.NEXT_PUBLIC_SUPABASE_URL &&
+  !process.env.NEXT_PUBLIC_SUPABASE_URL.includes("xxxx");
+
 interface SignOutButtonProps {
   locale: string;
+  tenantSlug?: string;
   className?: string;
 }
 
@@ -15,15 +20,20 @@ interface SignOutButtonProps {
  * Botón de cerrar sesión.
  * Llama a supabase.auth.signOut() y redirige al login.
  */
-export function SignOutButton({ locale, className }: SignOutButtonProps) {
+export function SignOutButton({ locale, tenantSlug, className }: SignOutButtonProps) {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
-  const supabase = createClient();
+  const supabase = HAS_SUPABASE ? createClient() : null;
 
   async function handleSignOut() {
     setLoading(true);
-    await supabase.auth.signOut();
-    router.push(`/${locale}/auth/login`);
+    if (HAS_SUPABASE) {
+      await supabase.auth.signOut();
+    } else {
+      await fetch("/api/dev-auth", { method: "DELETE" });
+    }
+    const loginUrl = `/${locale}/auth/login${tenantSlug ? `?tenant=${tenantSlug}` : ""}`;
+    router.push(loginUrl);
     router.refresh();
   }
 

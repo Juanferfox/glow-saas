@@ -95,7 +95,7 @@ export async function HeroSection({ tenant, locale }: HeroSectionProps) {
 
           <Link
             id="hero-cta-secondary"
-            href={`/${locale}#servicios`}
+            href="#servicios"
             className={cn(
               "inline-flex items-center justify-center gap-2",
               "rounded-full px-8 py-3.5 text-sm font-semibold",

@@ -5,6 +5,7 @@ import { ThemeToggle } from "@/components/theme/ThemeToggle";
 import { LanguageSwitcher } from "@/components/i18n/LanguageSwitcher";
 import { NotificationBell } from "@/components/profile/NotificationBell";
 import { getMyNotifications } from "@/lib/data/notifications";
+import { LOGO_REGISTRY } from "@/components/layout/logo-registry";
 import type { Tenant } from "@/lib/supabase/types";
 
 interface TopBarProps {
@@ -37,7 +38,9 @@ export async function TopBar({ tenant }: TopBarProps) {
           id="topbar-logo"
           className="flex items-center gap-2.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand-primary)] rounded-md"
         >
-          {tenant?.logo_url ? (
+          {tenant?.slug && LOGO_REGISTRY[tenant.slug] ? (
+            LOGO_REGISTRY[tenant.slug]({ size: 40 })
+          ) : tenant?.logo_url ? (
             <Image
               src={tenant.logo_url}
               alt={tenant.name || "Logo"}
