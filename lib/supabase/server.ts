@@ -1,8 +1,15 @@
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 import type { Database } from "./types";
+import { createDevServerClient } from "./dev-client";
+
+const hasSupabase =
+  !!process.env.NEXT_PUBLIC_SUPABASE_URL &&
+  !process.env.NEXT_PUBLIC_SUPABASE_URL.includes("xxxx");
 
 export async function createClient() {
+  if (!hasSupabase) return createDevServerClient();
+
   const cookieStore = await cookies();
 
   return createServerClient<Database>(
@@ -32,6 +39,8 @@ export async function createClient() {
  * NUNCA exponer en el cliente.
  */
 export async function createServiceClient() {
+  if (!hasSupabase) return createDevServerClient();
+
   const cookieStore = await cookies();
 
   return createServerClient<Database>(

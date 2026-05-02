@@ -17,10 +17,14 @@ export default async function LoginPage({ params, searchParams }: PageProps) {
   const { locale } = await params;
   const { error, next } = await searchParams;
 
-  // Si ya hay sesión, ir al home
+  // Si ya hay sesión, ir al home preservando el tenant
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
-  if (user) redirect(`/${locale}`);
+  if (user) {
+    const headersList = await headers();
+    const slug = headersList.get("x-tenant-slug");
+    redirect(`/${locale}${slug ? `?tenant=${slug}` : ""}`);
+  }
 
   // Cargar tenant para el branding de la página de login
   const headersList = await headers();

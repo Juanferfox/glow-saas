@@ -132,6 +132,48 @@ const DEV_TENANTS: Record<string, Tenant> = {
     created_at: new Date().toISOString(),
   },
 
+  // ── FM Glow Studio — Colombia ─────────────────────────────────────────────
+  "fm-glow-studio": {
+    id: "dev-fm-glow-studio",
+    slug: "fm-glow-studio",
+    name: "FM Glow Studio",
+    default_locale: "es",
+    active_locales: ["es"],
+    currency: "COP",
+    timezone: "America/Bogota",
+    logo_url: null,                         // usa componente React en LOGO_REGISTRY
+    brand_color_primary: "#C794A8",         // Rosa FM — color firma
+    brand_color_bg: "#FDF8F1",             // Crema Papel — fondo principal
+    brand_color_text: "#2F4F43",           // Verde Glow — texto
+    brand_color_surface: "#F3EBDB",        // Marfil — tarjetas y superficies
+    brand_color_border: "#E0C084",         // Dorado Luz — bordes
+    brand_color_dark_bg: "#1D3328",        // Verde Noche
+    brand_color_dark_surface: "#2F4F43",   // Verde Glow
+    brand_color_dark_text: "#FDF8F1",      // Crema Papel
+    brand_color_dark_border: "#A07A3A",    // Dorado Hoja
+    brand_font_heading: "var(--font-montserrat), 'Montserrat', sans-serif",
+    brand_font_body: "var(--font-dm-sans), 'DM Sans', system-ui, sans-serif",
+    brand_radius: "8px",
+    hero_headline: { es: "Tu ritual de belleza, perfecto" },
+    hero_subtext:  { es: "Tratamientos estéticos personalizados que realzan tu esencia natural" },
+    hero_cta:      { es: "Agendar cita" },
+    feature_store: true,
+    feature_inventory: true,
+    feature_loyalty: true,
+    feature_referrals: true,
+    feature_reviews: true,
+    feature_solar: true,
+    feature_sales_history: true,
+    feature_whatsapp_bot: false,
+    points_per_service: 10,
+    points_per_purchase: 5,
+    referral_bonus_pts: 50,
+    cancellation_penalty: 0,
+    plan: "premium",
+    active: true,
+    created_at: "2026-05-01T00:00:00Z",
+  },
+
   "glam-studio": {
     id: "dev-glam-studio",
     slug: "glam-studio",

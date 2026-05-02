@@ -40,14 +40,16 @@ export async function proxy(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // 3. Refrescar sesión de Supabase
-  const { supabaseResponse, user } = await updateSession(request);
-
-  // 4. Protección de rutas autenticadas
+  // 3. Refrescar sesión de Supabase (solo si está configurado)
   const hasSupabase =
     !!process.env.NEXT_PUBLIC_SUPABASE_URL &&
     !process.env.NEXT_PUBLIC_SUPABASE_URL.includes("xxxx");
 
+  const { supabaseResponse, user } = hasSupabase
+    ? await updateSession(request)
+    : { supabaseResponse: NextResponse.next({ request }), user: null };
+
+  // 4. Protección de rutas autenticadas
   if (hasSupabase && !user) {
     const parts = pathname.split("/");
     const segment = parts[2]; // índice 2 = primer segmento tras el locale

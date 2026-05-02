@@ -3,6 +3,8 @@ import {
   DM_Sans,
   Cormorant_Garamond,
   Lato,
+  Allura,
+  Montserrat,
 } from "next/font/google";
 import localFont from "next/font/local";
 
@@ -48,13 +50,38 @@ export const lato = Lato({
   display: "swap",
 });
 
+export const allura = Allura({
+  subsets: ["latin"],
+  weight: "400",
+  variable: "--font-allura",
+  display: "swap",
+});
+
+export const montserrat = Montserrat({
+  subsets: ["latin"],
+  weight: ["400", "500", "600"],
+  variable: "--font-montserrat",
+  display: "swap",
+});
+
 /**
  * Clases que se aplican al <body> para activar todas las fuentes.
  * Uso: <body className={fontVariables}>
+ *
+ * | Variable               | Valor a usar en el tenant                    |
+ * |------------------------|----------------------------------------------|
+ * | --font-playfair        | var(--font-playfair), serif                  |
+ * | --font-dm-sans         | var(--font-dm-sans), sans-serif              |
+ * | --font-cormorant       | var(--font-cormorant), serif                 |
+ * | --font-lato            | var(--font-lato), sans-serif                 |
+ * | --font-allura          | var(--font-allura), cursive                  |
+ * | --font-montserrat      | var(--font-montserrat), sans-serif           |
  */
 export const fontVariables = [
   playfairDisplay.variable,
   dmSans.variable,
   cormorantGaramond.variable,
   lato.variable,
+  allura.variable,
+  montserrat.variable,
 ].join(" ");
