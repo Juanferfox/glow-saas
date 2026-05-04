@@ -31,24 +31,39 @@ Plataforma multi-tenant white-label para SPAs y salones de belleza. Un solo code
 
 | Tenant | Nombre | País | Moneda | Plan | Estado |
 |---|---|---|---|---|---|
-| `channel-spa` | Channel Spa | 🇨🇴 Colombia | COP | Premium | **Activo** — servicios en carga |
-| `gio-spa` | Gio Spa | 🇺🇸 USA | USD | Starter | **Activo** — servicios en carga |
+| `fm-glow-studio` | FM Glow Studio | 🇨🇴 Colombia | COP | Premium | **Principal** — demo completa lista |
 | `glow-studio` | Glow Studio by Fabiana Madrigal | 🇨🇴 Colombia | COP | Premium Plus | POC completo · solar activo |
-| `spa-luna` | Spa Luna | 🇨🇴 Colombia | COP | Premium | Dev — tenant de prueba |
-| `glam-studio` | Glam Studio | 🇺🇸 USA | USD | Premium | Dev — tenant de prueba |
+| `channel-spa` | Channel Spa | 🇨🇴 Colombia | COP | Pro | Dev — servicios en carga |
+| `gio-spa` | Gio Spa | 🇺🇸 USA | USD | Starter | Dev — servicios en carga |
+| `spa-luna` | Spa Luna | 🇨🇴 Colombia | COP | Pro | Dev — tenant de prueba |
+| `glam-studio` | Glam Studio | 🇺🇸 USA | USD | Pro | Dev — tenant de prueba |
 
-> **Logos pendientes**: se instalarán cuando cada cliente los envíe. Basta con actualizar `logo_url` en la tabla `tenants`.  
-> **Servicios de Channel Spa y Gio Spa**: son placeholder hasta recibir la lista oficial.
+> **FM Glow Studio** es el tenant de demostración principal con 32 servicios, 3 especialistas, tienda con 8 productos y 3 usuarios de prueba funcionales.
 
 ### URLs de prueba en dev
 
 ```
-http://localhost:3000?tenant=channel-spa   → Channel Spa (CO)
-http://localhost:3000?tenant=gio-spa       → Gio Spa (USA)
-http://localhost:3000?tenant=glow-studio   → Glow Studio POC completo (CO, ES+EN)
-http://localhost:3000?tenant=spa-luna      → Spa Luna (CO)
-http://localhost:3000?tenant=glam-studio   → Glam Studio (USA, EN+ES)
+http://localhost:3000?tenant=fm-glow-studio  → FM Glow Studio (CO) ← DEMO PRINCIPAL
+http://localhost:3000?tenant=glow-studio     → Glow Studio POC completo (CO, ES+EN)
+http://localhost:3000?tenant=channel-spa     → Channel Spa (CO)
+http://localhost:3000?tenant=gio-spa         → Gio Spa (USA)
+http://localhost:3000?tenant=spa-luna        → Spa Luna (CO)
+http://localhost:3000?tenant=glam-studio     → Glam Studio (USA, EN+ES)
 ```
+
+### URL de la demo (ngrok)
+
+```
+https://c02e-181-131-164-77.ngrok-free.app/es?tenant=fm-glow-studio
+```
+
+### Usuarios de prueba (FM Glow Studio)
+
+| Usuario | Contraseña | Rol | Acceso |
+|---|---|---|---|
+| `admin` | `123456789` | Admin | Panel completo, CMS servicios, dashboard ganancias |
+| `cliente` | `123456789` | Cliente | Agendamiento, tienda, puntos, código de referido |
+| `empleada` | `123456789` | Trabajadora | Agenda personal, contador de sesiones diarias/semanales |
 
 ---
 
@@ -730,25 +745,86 @@ spa-saas/
 - `TreatmentPlanCard` con barra de progreso y sesiones individuales
 - Admin layout con navegación interna filtrada por rol
 
-### Sprint 5 — Primeros clientes reales 🔜
+### Sprint 5 — Demo FM Glow Studio + Auth Multi-rol ✅ `(2026-05-04)`
 
-- Cargar servicios reales de Channel Spa y Gio Spa
-- Subir logos cuando los clientes los envíen
-- Migración de datos en Supabase (producción)
-- Tests end-to-end con usuarias reales
+**Auth y sesiones:**
+- `middleware.ts` creado — `proxy.ts` ahora está correctamente wired como middleware de Next.js
+- `dev-auth` reescrito con 3 usuarios de prueba (admin / cliente / empleada) + login email/password
+- `useAuth` actualizado — lee cookie `dev-session` en dev mode (antes solo consultaba Supabase)
+- `LoginForm` en dev mode muestra 3 botones con selector de rol (nombre + descripción + badge)
+- `LoginPage` redirige correctamente en dev mode leyendo la cookie del servidor
+- Logout funcional en todos los roles
 
-### Sprint 6 — Monetización 🔜
+**Datos de prueba FM Glow Studio:**
+- 3 especialistas (Ana García, Valentina López, Sofía Herrera) con horarios lun-sáb
+- 8 productos de tienda (sérum, cremas, aceites, kits — todos en COP)
+- 7 citas de prueba con distintos estados (confirmed, pending, completed, cancelled)
+- 7 ventas mock para el dashboard de ganancias
+
+**Admin — nuevas funcionalidades:**
+- `/admin/servicios` — CMS completo: editar precio/duración/descripción, activar/desactivar, agregar servicios nuevos
+- Dashboard de ganancias con selector Hoy/Semana/Mes — desglose servicios vs tienda + últimas transacciones (`GananciasOverview`)
+- `/api/admin/servicios` — CRUD de servicios (ediciones en memoria en dev mode)
+- `/api/admin/analytics` — datos de ingresos con mock para dev mode
+- `/api/admin/horarios` — GET/PUT horarios de especialistas (editable en dev mode)
+- `/api/admin/puntos` — lista usuarios con puntos + ajuste (otorgar/quitar) con razón obligatoria
+
+**Cliente — nuevas funcionalidades:**
+- Sección "Código de referido" en `/perfil` — botón copiar + stats de referidos y puntos
+- `ReferralSection` component solo visible para rol `cliente`
+
+**Empleada — nuevas funcionalidades:**
+- Sección "Mi actividad" en `/perfil` — sesiones de hoy + sesiones esta semana
+- Contador semanal se reinicia automáticamente cada lunes a las 00:00
+- `EmpleadaStats` component solo visible para rol `trabajadora`
+- `/api/empleada/stats` — calcula sesiones en tiempo real (sin almacenamiento extra)
+- Admin layout en dev mode lee el rol desde la cookie y protege rutas correctamente
+
+### Sprint 6 — Funcionalidades pendientes 🔜
+
+**Booking end-to-end:**
+- [ ] Verificar que el wizard de agendamiento funcione completo para `fm-glow-studio`
+- [ ] Flujo de `?tenant=fm-glow-studio` en la URL de disponibilidad y booking API
+- [ ] Campo "código de referido" en el paso de confirmación del booking
+- [ ] Que las citas creadas aparezcan en `/citas` del cliente
+
+**Tienda end-to-end:**
+- [ ] Verificar carrito y checkout en dev mode para `fm-glow-studio`
+- [ ] Descuento por puntos al hacer checkout
+- [ ] Historial de pedidos en `/perfil` o `/citas`
+
+**Admin CMS — pendiente:**
+- [ ] Página de gestión de horarios de empleadas (`/admin/agenda` → sección de horarios)
+- [ ] Página de gestión de puntos de usuarios (`/admin/fidelizacion` → sección puntos)
+- [ ] CMS de productos de tienda (`/admin/inventario` → tab productos)
+- [ ] Filtro por empleada en el calendario del admin
+
+**Perfil de empleada:**
+- [ ] Filtrar calendario para mostrar solo citas de la empleada logueada
+- [ ] Vista de calendario filtrada por `specialist_id` del usuario
+
+**Puntos y canje:**
+- [ ] Opciones de canje reales en `/puntos` (generar código de descuento)
+- [ ] Validar código de descuento en checkout de tienda y booking
+
+**Producción (Supabase real):**
+- [ ] Conectar variables de entorno reales a Supabase
+- [ ] Crear usuarios reales en Supabase Auth (admin, cliente, empleada)
+- [ ] Aplicar schema SQL en Supabase (`docs/database-schema.sql`)
+- [ ] Cargar datos reales de FM Glow Studio en Supabase
+
+### Sprint 7 — Monetización 🔜
 
 - Stripe: planes Starter/Premium/Premium Plus
 - Add-on Bronceo Solar via Stripe ($9/mes)
 - Portal de facturación self-service
 - Límites por plan (cuota de citas, trabajadoras)
 
-### Sprint 7 — Crecimiento 🔜
+### Sprint 8 — Crecimiento 🔜
 
 - Reseñas con moderación y respuesta del spa
-- Analytics para la dueña (ingresos, ocupación, retención)
-- Referidos con link único y tracking
+- Referidos con link único y tracking real en DB
+- WhatsApp Bot (webhook ya en arquitectura)
 
 ### Sprint 8 — Chatbot IA + Arma tu plan 🔜 ⚠️ PENDIENTE
 
@@ -938,4 +1014,13 @@ open "http://localhost:3000?tenant=gio-spa"
 
 ---
 
-_Última actualización: **Sprints 0–4 completados · 2 clientes activos (Channel Spa + Gio Spa) · `npx tsc --noEmit` = 0 errores** — 2026-04-21_
+### Notas técnicas adicionales — Sprint 5
+
+- **`middleware.ts` vs `proxy.ts`**: Next.js requiere el archivo en la raíz nombrado exactamente `middleware.ts`. El archivo `proxy.ts` contiene la lógica; `middleware.ts` lo re-exporta. Esto separa la lógica del contrato de Next.js.
+- **Dev session como JSON**: la cookie `dev-session` almacena el perfil completo serializado en JSON (antes solo era `"1"`). Permite leer rol, referral_code, specialist_id en cualquier server component sin consultar DB.
+- **`useAuth` dual-mode**: en dev, lee la cookie desde `document.cookie` (client-side). En producción, usa Supabase Auth normal. La interfaz retorna `devProfile` con el tipo completo.
+- **Ediciones en memoria**: los cambios de servicios (`admin/servicios`) y horarios (`admin/horarios`) se almacenan en Maps en memoria del proceso Node.js durante la sesión de dev. Se pierden al reiniciar el servidor — comportamiento esperado para dev.
+
+---
+
+_Última actualización: **Sprints 0–5 completados · FM Glow Studio demo lista · 3 usuarios de prueba funcionales** — 2026-05-04_

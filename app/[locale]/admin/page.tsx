@@ -118,6 +118,9 @@ export default async function AdminDashboardPage({ params }: PageProps) {
         ))}
       </div>
 
+      {/* Dashboard de Ganancias */}
+      <GananciasOverview />
+
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
         {/* Próximas Citas */}
         <div className="space-y-4">

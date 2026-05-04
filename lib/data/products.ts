@@ -17,6 +17,18 @@ export interface ProductRow {
 }
 
 const DEV_PRODUCTS: Record<string, ProductRow[]> = {
+  // ── FM Glow Studio ─────────────────────────────────────────────────────────
+  "dev-fm-glow-studio": [
+    { id: "pfmg-1", tenant_id: "dev-fm-glow-studio", name: { es: "Sérum Vitamina C Glow" },         description: { es: "Sérum iluminador y antioxidante para el rostro. Uso diario mañana y noche." }, price: 85000,  stock: 15, stock_alert_threshold: 3, image_url: null, category: "facial",    active: true, created_at: new Date().toISOString() },
+    { id: "pfmg-2", tenant_id: "dev-fm-glow-studio", name: { es: "Crema Hidratante Luxury" },        description: { es: "Crema de hidratación profunda con ácido hialurónico y colágeno marino." },    price: 120000, stock: 8,  stock_alert_threshold: 2, image_url: null, category: "facial",    active: true, created_at: new Date().toISOString() },
+    { id: "pfmg-3", tenant_id: "dev-fm-glow-studio", name: { es: "Aceite Corporal Rosa FM" },        description: { es: "Aceite seco corporal con extracto de rosa y vitamina E. Aroma duradero." },   price: 65000,  stock: 20, stock_alert_threshold: 5, image_url: null, category: "corporal",  active: true, created_at: new Date().toISOString() },
+    { id: "pfmg-4", tenant_id: "dev-fm-glow-studio", name: { es: "Kit Manicure Professional" },      description: { es: "Set completo de manicure: lima, cuticula, base y top coat profesional." },    price: 45000,  stock: 12, stock_alert_threshold: 3, image_url: null, category: "uñas",     active: true, created_at: new Date().toISOString() },
+    { id: "pfmg-5", tenant_id: "dev-fm-glow-studio", name: { es: "Sérum Crecimiento Pestañas" },     description: { es: "Sérum nutritivo para fortalecer y estimular el crecimiento de las pestañas." }, price: 95000, stock: 6,  stock_alert_threshold: 2, image_url: null, category: "pestañas", active: true, created_at: new Date().toISOString() },
+    { id: "pfmg-6", tenant_id: "dev-fm-glow-studio", name: { es: "Mascarilla Capilar Keratina" },    description: { es: "Mascarilla reparadora con keratina y proteínas de seda. Para cabello dañado." }, price: 55000, stock: 10, stock_alert_threshold: 3, image_url: null, category: "capilar",  active: true, created_at: new Date().toISOString() },
+    { id: "pfmg-7", tenant_id: "dev-fm-glow-studio", name: { es: "Tónico Facial Agua de Rosas" },    description: { es: "Tónico refrescante y equilibrante con agua de rosas pura. Sin alcohol." },      price: 48000,  stock: 18, stock_alert_threshold: 4, image_url: null, category: "facial",    active: true, created_at: new Date().toISOString() },
+    { id: "pfmg-8", tenant_id: "dev-fm-glow-studio", name: { es: "Protector Solar SPF 50+" },         description: { es: "Protector solar facial de amplio espectro. Textura ligera, sin residuo blanco." }, price: 72000, stock: 14, stock_alert_threshold: 4, image_url: null, category: "facial",    active: true, created_at: new Date().toISOString() },
+  ],
+  // ── Spa Luna ───────────────────────────────────────────────────────────────
   "dev-spa-luna": [
     { id: "p1", tenant_id: "dev-spa-luna", name: { es: "Óleo facial de argán" }, description: { es: "Aceite puro de argán para hidratación profunda." }, price: 45000, stock: 15, stock_alert_threshold: 5, image_url: null, category: "skincare", active: true, created_at: new Date().toISOString() },
     { id: "p2", tenant_id: "dev-spa-luna", name: { es: "Crema exfoliante café" }, description: { es: "Exfoliante corporal natural con aroma a café." }, price: 35000, stock: 8, stock_alert_threshold: 5, image_url: null, category: "body", active: true, created_at: new Date().toISOString() },
