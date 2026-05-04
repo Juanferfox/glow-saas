@@ -31,19 +31,21 @@ Plataforma multi-tenant white-label para SPAs y salones de belleza. Un solo code
 
 | Tenant | Nombre | País | Moneda | Plan | Estado |
 |---|---|---|---|---|---|
-| `spa-luna` | Spa Luna | 🇨🇴 Colombia | COP | Pro | Dev — tenant de prueba |
-| `channel-spa` | Channel Spa | 🇨🇴 Colombia | COP | Pro | **Activo** — servicios en carga |
+| `channel-spa` | Channel Spa | 🇨🇴 Colombia | COP | Premium | **Activo** — servicios en carga |
 | `gio-spa` | Gio Spa | 🇺🇸 USA | USD | Starter | **Activo** — servicios en carga |
-| `glam-studio` | Glam Studio | 🇺🇸 USA | USD | Pro | Dev — tenant de prueba |
+| `glow-studio` | Glow Studio by Fabiana Madrigal | 🇨🇴 Colombia | COP | Premium Plus | POC completo · solar activo |
+| `spa-luna` | Spa Luna | 🇨🇴 Colombia | COP | Premium | Dev — tenant de prueba |
+| `glam-studio` | Glam Studio | 🇺🇸 USA | USD | Premium | Dev — tenant de prueba |
 
 > **Logos pendientes**: se instalarán cuando cada cliente los envíe. Basta con actualizar `logo_url` en la tabla `tenants`.  
-> **Servicios**: son placeholder. Se reemplazan al recibir la lista real de cada spa.
+> **Servicios de Channel Spa y Gio Spa**: son placeholder hasta recibir la lista oficial.
 
 ### URLs de prueba en dev
 
 ```
 http://localhost:3000?tenant=channel-spa   → Channel Spa (CO)
 http://localhost:3000?tenant=gio-spa       → Gio Spa (USA)
+http://localhost:3000?tenant=glow-studio   → Glow Studio POC completo (CO, ES+EN)
 http://localhost:3000?tenant=spa-luna      → Spa Luna (CO)
 http://localhost:3000?tenant=glam-studio   → Glam Studio (USA, EN+ES)
 ```
@@ -473,34 +475,36 @@ Script inline en `<head>` antes de cualquier CSS:
 
 ### Matriz de módulos por plan
 
-| Módulo | Free | Starter | Pro | White-label |
-|---|---|---|---|---|
-| Agendamiento de citas | ✓ | ✓ | ✓ | ✓ |
-| Calendario personal (cliente/trabajadora) | ✓ | ✓ | ✓ | ✓ |
-| iCal sync (Google / Apple Calendar) | ✓ | ✓ | ✓ | ✓ |
-| Login OAuth (Google, Apple) | ✓ | ✓ | ✓ | ✓ |
-| PWA instalable | ✓ | ✓ | ✓ | ✓ |
-| Multi-idioma | ✓ | ✓ | ✓ | ✓ |
-| Dark mode | ✓ | ✓ | ✓ | ✓ |
-| Recordatorios automáticos (email + push) | ✓ | ✓ | ✓ | ✓ |
-| 1 trabajadora | ✓ | — | — | — |
-| Hasta 3 trabajadoras | — | ✓ | — | — |
-| Hasta 10 trabajadoras | — | — | ✓ | ✓ |
-| Tienda de productos | — | ✓ | ✓ | ✓ |
-| Programa de puntos y fidelización | — | ✓ | ✓ | ✓ |
-| Sistema de referidos | — | ✓ | ✓ | ✓ |
-| Tratamientos multi-sesión | — | ✓ | ✓ | ✓ |
-| Calendario del equipo (admin) | — | — | ✓ | ✓ |
-| Gestión de usuarios (invite + roles) | — | — | ✓ | ✓ |
-| Inventario con alertas | — | — | ✓ | ✓ |
-| Historial de ventas | — | — | ✓ | ✓ |
-| Reseñas y calificaciones | — | — | ✓ | ✓ |
-| Dominio propio | — | — | — | ✓ |
-| Soporte prioritario | — | — | — | ✓ |
-| ☀️ Bronceo solar | Add-on | Add-on | Add-on | Add-on |
-| 🤖 WhatsApp Bot | Add-on | Add-on | Add-on | Add-on |
+| Módulo | Starter | Premium | Premium Plus |
+|---|---|---|---|
+| Agendamiento de citas | ✓ | ✓ | ✓ |
+| Calendario personal (cliente/trabajadora) | ✓ | ✓ | ✓ |
+| iCal sync (Google / Apple Calendar) | ✓ | ✓ | ✓ |
+| Login OAuth (Google, Apple) | ✓ | ✓ | ✓ |
+| PWA instalable | ✓ | ✓ | ✓ |
+| Multi-idioma | ✓ | ✓ | ✓ |
+| Dark mode | ✓ | ✓ | ✓ |
+| Recordatorios automáticos (email + push) | ✓ | ✓ | ✓ |
+| Hasta 3 trabajadoras | ✓ | — | — |
+| Hasta 10 trabajadoras | — | ✓ | ✓ |
+| Tienda de productos | ✓ | ✓ | ✓ |
+| Programa de puntos y fidelización | ✓ | ✓ | ✓ |
+| Sistema de referidos | ✓ | ✓ | ✓ |
+| Tratamientos multi-sesión | ✓ | ✓ | ✓ |
+| Calendario del equipo (admin) | — | ✓ | ✓ |
+| Gestión de usuarios (invite + roles) | — | ✓ | ✓ |
+| Inventario con alertas | — | ✓ | ✓ |
+| Historial de ventas | — | ✓ | ✓ |
+| Reseñas y calificaciones | — | ✓ | ✓ |
+| Multi-sucursal | — | — | ✓ |
+| Dominio propio | — | — | ✓ |
+| Soporte prioritario | — | — | ✓ |
+| ☀️ Bronceo solar | Add-on | Add-on | Add-on |
+| 🤖 Chatbot IA (WPP/Telegram) | Add-on ⚠️ | Add-on ⚠️ | Add-on ⚠️ |
+| 📋 Arma tu plan | — ⚠️ | — ⚠️ | — ⚠️ |
 
-> **Add-ons** se contratan por separado, independientemente del plan. Ver [sección 15](#15-planes-y-precios).
+> **Add-ons** se contratan por separado, independientemente del plan. Ver [sección 15](#15-planes-y-precios).  
+> ⚠️ **PENDIENTE DE DESARROLLO**: Chatbot IA y Arma tu plan no están implementados aún.
 
 ### Detalle de módulos clave
 
@@ -735,7 +739,7 @@ spa-saas/
 
 ### Sprint 6 — Monetización 🔜
 
-- Stripe: planes Starter/Pro/White-label
+- Stripe: planes Starter/Premium/Premium Plus
 - Add-on Bronceo Solar via Stripe ($9/mes)
 - Portal de facturación self-service
 - Límites por plan (cuota de citas, trabajadoras)
@@ -745,6 +749,15 @@ spa-saas/
 - Reseñas con moderación y respuesta del spa
 - Analytics para la dueña (ingresos, ocupación, retención)
 - Referidos con link único y tracking
+
+### Sprint 8 — Chatbot IA + Arma tu plan 🔜 ⚠️ PENDIENTE
+
+- **Chatbot IA via n8n** — WPP o Telegram a elección del cliente
+  - Aprende de conversaciones pasadas
+  - Escala al dueño ante situaciones desconocidas
+  - Log de fallos para aprendizaje continuo
+  - WhatsApp requiere número verificado + costo API mayor
+- **Arma tu plan** — constructor de plan personalizado (módulos à la carte, precio dinámico)
 
 ---
 
@@ -767,36 +780,46 @@ Ver detalle en [`docs/new-tenant.md`](./docs/new-tenant.md).
 
 ## 15. Planes y precios
 
+Los spas pagan desde el primer mes. No hay plan gratuito.
+
 ### Suscripción mensual al cliente
 
 ```
-Free          → $0/mes
-              1 spa, 50 citas/mes, 1 trabajadora
-              Calendario + iCal sync básico
-
 Starter       → $19/mes
               3 trabajadoras, tienda, puntos
               Tratamientos multi-sesión, recordatorios
+              Calendario personal + iCal sync
 
-Pro           → $39/mes
+Premium       → $39/mes
               10 trabajadoras, calendario del equipo
               Gestión de usuarios, inventario, ventas
+              Reseñas y calificaciones
 
-White-label   → $79/mes
-              Todo Pro + dominio propio + branding 100%
+Premium Plus  → $79/mes
+              Todo Premium + dominio propio
+              Branding 100% personalizado
+              Multi-sucursal + soporte prioritario
 ```
 
 ### Add-ons (cualquier plan)
 
 ```
-☀️ Módulo Bronceo Solar    → $9/mes
+☀️ Módulo Bronceo Solar         → $9/mes
    Sesiones UV, alertas, historial por cabina
 
-🤖 WhatsApp Bot            → $15/mes
-   Confirmaciones y recordatorios por WhatsApp
+🤖 Chatbot IA (WPP o Telegram)  → $25/mes  ⚠️ PENDIENTE
+   IA que aprende de conversaciones pasadas,
+   escala al dueño ante situaciones nuevas,
+   logea todo para no fallar dos veces.
+   Canal a elección del cliente.
+   Integración via n8n.
+
+📋 Arma tu plan                 → precio dinámico  ⚠️ PENDIENTE
+   Constructor de plan personalizado: módulos à la carte
 ```
 
-> El bronceo solar es un add-on separado porque no todos los spas tienen camas UV. No tiene sentido incluirlo en el plan base.
+> El bronceo solar es un add-on porque no todos los spas tienen camas UV. No tiene sentido incluirlo en el plan base.  
+> El chatbot y "arma tu plan" están pendientes de desarrollo — no construir aún.
 
 ### Costo de infraestructura (tuyo)
 
@@ -813,7 +836,7 @@ White-label   → $79/mes
 
 | Clientes | Ingresos brutos | Costo infra | Neto |
 |---|---|---|---|
-| 2 (Channel + Gio) | ~$58/mes | $46 | ~$12/mes |
+| 2 activos (Channel + Gio) | ~$58/mes | $46 | ~$12/mes |
 | 5 clientes | ~$175/mes | $46 | ~$130/mes |
 | 10 clientes | ~$390/mes | $50 | ~$340/mes |
 

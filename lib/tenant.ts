@@ -48,6 +48,54 @@ const DEV_TENANTS: Record<string, Tenant> = {
     active: true,
     created_at: new Date().toISOString(),
   },
+  // ── Glow Studio by Fabiana Madrigal — POC completo ───────────────────────
+  "glow-studio": {
+    id: "dev-glow-studio",
+    slug: "glow-studio",
+    name: "Glow Studio by Fabiana Madrigal",
+    default_locale: "es",
+    active_locales: ["es", "en"],
+    currency: "COP",
+    timezone: "America/Bogota",
+    logo_url: null,                         // TODO: logo pendiente
+    brand_color_primary: "#d4826a",         // coral cálido — "glow"
+    brand_color_bg: "#100b09",              // negro con tinte cálido profundo
+    brand_color_text: "#fdf6f2",            // crema luminosa
+    brand_color_surface: "#1e1511",         // marrón oscuro cálido
+    brand_color_border: "#362418",          // marrón medio cálido
+    brand_color_dark_bg: "#0b0806",
+    brand_color_dark_surface: "#160f0c",
+    brand_color_dark_text: "#fdf6f2",
+    brand_color_dark_border: "#2a1c13",
+    brand_font_heading: "'Cormorant Garamond', Georgia, serif",
+    brand_font_body: "'DM Sans', system-ui, sans-serif",
+    brand_radius: "12px",
+    hero_headline: {
+      es: "Tu glow, nuestra pasión",
+      en: "Your glow, our passion",
+    },
+    hero_subtext: {
+      es: "Tratamientos exclusivos que realzan tu belleza natural en un espacio pensado para ti",
+      en: "Exclusive treatments that enhance your natural beauty in a space designed for you",
+    },
+    hero_cta: { es: "Reservar mi cita", en: "Book my appointment" },
+    feature_store: true,
+    feature_inventory: true,
+    feature_loyalty: true,
+    feature_referrals: true,
+    feature_reviews: true,
+    feature_solar: true,                    // activo para probar el módulo
+    feature_sales_history: true,
+    feature_whatsapp_bot: false,            // add-on pendiente de desarrollo
+    points_per_service: 120,
+    points_per_purchase: 1,
+    referral_bonus_pts: 250,
+    cancellation_penalty: 60,
+    plan: "premium_plus",
+    active: true,
+    created_at: new Date().toISOString(),
+  },
+
   // ── Channel Spa — Colombia ────────────────────────────────────────────────
   "channel-spa": {
     id: "dev-channel-spa",

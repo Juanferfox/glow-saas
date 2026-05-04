@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { headers } from "next/headers";
+import { cookies } from "next/headers";
 import Image from "next/image";
 import { User, Palette, Shield } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
@@ -12,10 +13,32 @@ import { getMyAppointments } from "@/lib/data/appointments";
 import { getMyNotifications } from "@/lib/data/notifications";
 import { UpcomingAppointments } from "@/components/profile/UpcomingAppointments";
 import { NotificationCenter } from "@/components/profile/NotificationCenter";
+import { ReferralCodeCard } from "@/components/loyalty/ReferralCodeCard";
+import { WorkerActivity } from "@/components/profile/WorkerActivity";
 import { Calendar, Bell } from "lucide-react";
 
 interface PageProps {
   params: Promise<{ locale: string }>;
+}
+
+interface DevProfile {
+  role: string;
+  referral_code?: string | null;
+  full_name?: string;
+  email?: string;
+  avatar_url?: string | null;
+  points?: number;
+}
+
+async function getDevProfile(): Promise<DevProfile | null> {
+  try {
+    const cookieStore = await cookies();
+    const devCookie = cookieStore.get("dev-session")?.value;
+    if (!devCookie) return null;
+    return JSON.parse(Buffer.from(devCookie, "base64").toString("utf-8"));
+  } catch {
+    return null;
+  }
 }
 
 /**
@@ -26,32 +49,63 @@ interface PageProps {
 export default async function PerfilPage({ params }: PageProps) {
   const { locale } = await params;
 
-  // Verificar sesión + cargar tenant (se necesita el slug para el redirect)
-  const supabase = await createClient();
   const headersList = await headers();
   const tenantSlug = headersList.get("x-tenant-slug");
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    const tenantParam = tenantSlug ? `&tenant=${tenantSlug}` : "";
-    redirect(`/${locale}/auth/login?next=/${locale}/perfil${tenantParam}`);
-  }
-
   const tenant = tenantSlug ? await getTenant(tenantSlug) : null;
 
-  // Datos del usuario
-  const displayName =
-    user.user_metadata?.full_name ??
-    user.user_metadata?.name ??
-    user.email?.split("@")[0] ??
-    "Usuario";
-  const avatarUrl: string | null =
-    user.user_metadata?.avatar_url ?? user.user_metadata?.picture ?? null;
-  const email = user.email ?? "";
-  const provider = user.app_metadata?.provider ?? "email";
+  const isDevMode =
+    !process.env.NEXT_PUBLIC_SUPABASE_URL ||
+    process.env.NEXT_PUBLIC_SUPABASE_URL.includes("xxxx");
+
+  let displayName = "Usuario";
+  let avatarUrl: string | null = null;
+  let email = "";
+  let provider = "email";
+  let userRole = "cliente";
+  let referralCode: string | null = null;
+  let referralBonus = tenant?.referral_bonus_pts ?? 50;
+
+  if (isDevMode) {
+    const devProfile = await getDevProfile();
+    if (!devProfile) {
+      const tenantParam = tenantSlug ? `&tenant=${tenantSlug}` : "";
+      redirect(`/${locale}/auth/login?next=/${locale}/perfil${tenantParam}`);
+    }
+    displayName = devProfile.full_name ?? devProfile.email?.split("@")[0] ?? "Usuario";
+    email = devProfile.email ?? "";
+    userRole = devProfile.role ?? "cliente";
+    referralCode = devProfile.referral_code ?? null;
+  } else {
+    // Verificar sesión Supabase
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      const tenantParam = tenantSlug ? `&tenant=${tenantSlug}` : "";
+      redirect(`/${locale}/auth/login?next=/${locale}/perfil${tenantParam}`);
+    }
+
+    displayName =
+      user.user_metadata?.full_name ??
+      user.user_metadata?.name ??
+      user.email?.split("@")[0] ??
+      "Usuario";
+    avatarUrl = user.user_metadata?.avatar_url ?? user.user_metadata?.picture ?? null;
+    email = user.email ?? "";
+    provider = user.app_metadata?.provider ?? "email";
+
+    // Obtener perfil del tenant para role y referral_code
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("role, referral_code")
+      .eq("id", user.id)
+      .eq("tenant_id", tenant?.id)
+      .single();
+    if (profile) {
+      userRole = profile.role ?? "cliente";
+      referralCode = profile.referral_code ?? null;
+    }
+  }
+
   const availableLocales = tenant?.active_locales ?? [locale];
 
   return (
@@ -123,10 +177,22 @@ export default async function PerfilPage({ params }: PageProps) {
               color: "var(--brand-primary)",
             }}
           >
-            {provider}
+            {userRole === "trabajadora" ? "especialista" : userRole}
           </span>
         </div>
       </section>
+
+      {/* Referido (solo cliente) */}
+      {userRole === "cliente" && (
+        <ReferralCodeCard
+          referralCode={referralCode}
+          referralBonus={referralBonus}
+          locale={locale}
+        />
+      )}
+
+      {/* Actividad (solo trabajadora) */}
+      {userRole === "trabajadora" && <WorkerActivity />}
 
       {/* Preferencias */}
       <section aria-labelledby="prefs-heading" className="space-y-3">

@@ -45,12 +45,27 @@ export async function proxy(request: NextRequest) {
     !!process.env.NEXT_PUBLIC_SUPABASE_URL &&
     !process.env.NEXT_PUBLIC_SUPABASE_URL.includes("xxxx");
 
-  const { supabaseResponse, user } = hasSupabase
-    ? await updateSession(request)
-    : { supabaseResponse: NextResponse.next({ request }), user: null };
+  let user: unknown = null;
+  let supabaseResponse = NextResponse.next({ request });
+
+  if (hasSupabase) {
+    const result = await updateSession(request);
+    user = result.user;
+    supabaseResponse = result.supabaseResponse;
+  } else {
+    // Dev mode: leer sesión de cookie dev-session
+    const devCookie = request.cookies.get("dev-session")?.value;
+    if (devCookie) {
+      try {
+        user = JSON.parse(Buffer.from(devCookie, "base64").toString("utf-8"));
+      } catch {
+        // cookie inválida, ignorar
+      }
+    }
+  }
 
   // 4. Protección de rutas autenticadas
-  if (hasSupabase && !user) {
+  if (!user) {
     const parts = pathname.split("/");
     const segment = parts[2]; // índice 2 = primer segmento tras el locale
 
@@ -58,7 +73,6 @@ export async function proxy(request: NextRequest) {
       const locale = parts[1] ?? "es";
       const loginUrl = new URL(`/${locale}/auth/login`, request.url);
       loginUrl.searchParams.set("next", pathname);
-      // Mantener el tenant slug en el redirect si estamos en localhost
       if (tenantSlug) loginUrl.searchParams.set("tenant", tenantSlug);
       return NextResponse.redirect(loginUrl);
     }

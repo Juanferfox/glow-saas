@@ -1,17 +1,29 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { headers } from "next/headers";
+import { cookies } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
 import { getTenant } from "@/lib/tenant";
 import {
   CalendarDays, ShoppingBag, Star, Settings,
   Users, CalendarRange, LayoutDashboard,
-  Bell, TrendingUp,
+  Bell, TrendingUp, Scissors,
 } from "lucide-react";
 
 interface AdminLayoutProps {
   children: React.ReactNode;
   params: Promise<{ locale: string }>;
+}
+
+async function getDevProfile(): Promise<{ role: string } | null> {
+  try {
+    const cookieStore = await cookies();
+    const devCookie = cookieStore.get("dev-session")?.value;
+    if (!devCookie) return null;
+    return JSON.parse(Buffer.from(devCookie, "base64").toString("utf-8"));
+  } catch {
+    return null;
+  }
 }
 
 /**
@@ -33,10 +45,13 @@ export default async function AdminLayout({ children, params }: AdminLayoutProps
   const tenant      = tenantSlug ? await getTenant(tenantSlug) : null;
   if (!tenant) redirect(`/${locale}`);
 
-  // Dev: role simulado = admin para probar todo
-  const userRoleArr: ["admin" | "recepcionista" | "trabajadora"] = ["admin"];
+  let userRoleArr: string[] = [];
 
-  if (!isDevMode) {
+  if (isDevMode) {
+    const profile = await getDevProfile();
+    if (!profile) redirect(`/${locale}/auth/login?next=/${locale}/admin&tenant=${tenantSlug}`);
+    userRoleArr = [profile.role ?? "admin"];
+  } else {
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) redirect(`/${locale}/auth/login?next=/${locale}/admin/agenda`);
@@ -52,16 +67,17 @@ export default async function AdminLayout({ children, params }: AdminLayoutProps
     if (!role || (role !== "admin" && role !== "recepcionista" && role !== "trabajadora")) {
       redirect(`/${locale}`);
     }
-    userRoleArr[0] = role as "admin" | "recepcionista" | "trabajadora";
+    userRoleArr[0] = role as string;
   }
 
-  const userRole = userRoleArr[0];
+  const userRole = userRoleArr[0] ?? "admin";
 
   // ── Menú según rol ───────────────────────────────────────────────────────
   type NavItem = { href: string; label: string; icon: typeof CalendarDays; adminOnly?: boolean; workerHidden?: boolean };
   const navItems: NavItem[] = [
     { href: `/${locale}/admin/agenda`,        label: "Agenda hoy",     icon: LayoutDashboard },
     { href: `/${locale}/admin/calendario`,    label: "Calendario",     icon: CalendarRange },
+    { href: `/${locale}/admin/servicios`,     label: "Servicios",      icon: Scissors,      workerHidden: true },
     { href: `/${locale}/admin/notificaciones`,label: "Notificaciones", icon: Bell,         workerHidden: true },
     { href: `/${locale}/admin/inventario`,    label: "Inventario",     icon: ShoppingBag,  workerHidden: true },
     { href: `/${locale}/admin/fidelizacion`,  label: "Fidelización",   icon: Star,         workerHidden: true },

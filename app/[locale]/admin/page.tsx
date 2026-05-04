@@ -3,6 +3,7 @@ import { getTenant } from "@/lib/tenant";
 import { getSalesHistory } from "@/lib/data/inventory";
 import { getMyAppointments } from "@/lib/data/appointments";
 import { DashboardActions } from "@/components/admin/DashboardActions";
+import { GananciasOverview } from "@/components/admin/GananciasOverview";
 import {
   Users,
   Calendar,
@@ -86,6 +87,9 @@ export default async function AdminDashboardPage({ params }: PageProps) {
         
         <DashboardActions sales={sales} appointments={appointments} />
       </div>
+
+      {/* Ganancias Overview */}
+      <GananciasOverview />
 
       {/* Grid de Stats */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">

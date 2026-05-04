@@ -37,6 +37,10 @@ export function LoginForm({ locale, tenant, errorCode, next }: LoginFormProps) {
   const [name, setName] = useState("");
   const [formError, setFormError] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
+  const [devIdentifier, setDevIdentifier] = useState("");
+  const [devPassword, setDevPassword] = useState("");
+  const [devError, setDevError] = useState<string | null>(null);
+  const [showTestUsers, setShowTestUsers] = useState(false);
 
   const supabase = HAS_SUPABASE ? createClient() : null;
 
@@ -93,12 +97,27 @@ export function LoginForm({ locale, tenant, errorCode, next }: LoginFormProps) {
     setEmailLoading(false);
   }
 
-  async function handleDevLogin() {
+  async function handleDevLogin(e: React.FormEvent) {
+    e.preventDefault();
+    if (!devIdentifier || !devPassword) return;
     setDevLoading(true);
-    await fetch("/api/dev-auth", { method: "POST" });
-    const dest = next
-      ? next
-      : `/${locale}${tenant ? `?tenant=${tenant.slug}` : ""}`;
+    setDevError(null);
+
+    const res = await fetch("/api/dev-auth", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ identifier: devIdentifier, password: devPassword }),
+    });
+
+    const data = await res.json();
+
+    if (!res.ok || data.error) {
+      setDevError(data.error || "Error al iniciar sesión");
+      setDevLoading(false);
+      return;
+    }
+
+    const dest = next ?? `/${locale}${data.redirectTo ?? ""}${tenant ? (data.redirectTo ?? "").includes("?") ? `&tenant=${tenant.slug}` : `?tenant=${tenant.slug}` : ""}`;
     router.push(dest);
     router.refresh();
   }
@@ -148,26 +167,78 @@ export function LoginForm({ locale, tenant, errorCode, next }: LoginFormProps) {
                 Modo desarrollo
               </p>
               <p className="mt-1 text-xs text-[var(--brand-text)] opacity-50">
-                Supabase no está configurado. Usa la sesión de prueba.
+                Supabase no está configurado. Inicia sesión con un usuario de prueba.
               </p>
             </div>
 
+            {devError && (
+              <div className="rounded-xl border border-red-500/20 bg-red-500/10 px-4 py-3">
+                <p className="text-sm text-red-500">{devError}</p>
+              </div>
+            )}
+
+            <form onSubmit={handleDevLogin} className="space-y-3">
+              <input
+                type="text"
+                placeholder="Email o usuario"
+                value={devIdentifier}
+                onChange={e => { setDevIdentifier(e.target.value); setDevError(null); }}
+                required
+                className={cn(
+                  "w-full rounded-xl border border-[var(--brand-border)] px-4 py-3 text-sm",
+                  "bg-[var(--brand-bg)] text-[var(--brand-text)] placeholder:opacity-40",
+                  "focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)]"
+                )}
+              />
+              <input
+                type="password"
+                placeholder="Contraseña"
+                value={devPassword}
+                onChange={e => { setDevPassword(e.target.value); setDevError(null); }}
+                required
+                className={cn(
+                  "w-full rounded-xl border border-[var(--brand-border)] px-4 py-3 text-sm",
+                  "bg-[var(--brand-bg)] text-[var(--brand-text)] placeholder:opacity-40",
+                  "focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)]"
+                )}
+              />
+              <button
+                type="submit"
+                disabled={devLoading}
+                className={cn(
+                  "flex w-full items-center justify-center gap-2 rounded-xl py-3 text-sm font-semibold text-white shadow",
+                  "transition-all duration-200 hover:-translate-y-0.5 hover:opacity-90",
+                  "disabled:opacity-50 disabled:cursor-not-allowed disabled:translate-y-0"
+                )}
+                style={{ backgroundColor: "var(--brand-primary)" }}
+              >
+                {devLoading ? (
+                  <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/40 border-t-white" />
+                ) : (
+                  "Iniciar sesión"
+                )}
+              </button>
+            </form>
+
             <button
-              onClick={handleDevLogin}
-              disabled={devLoading}
-              className={cn(
-                "flex w-full items-center justify-center gap-2 rounded-xl py-3 text-sm font-semibold text-white shadow",
-                "transition-all duration-200 hover:-translate-y-0.5 hover:opacity-90",
-                "disabled:opacity-50 disabled:cursor-not-allowed disabled:translate-y-0"
-              )}
-              style={{ backgroundColor: "var(--brand-primary)" }}
+              onClick={() => setShowTestUsers(!showTestUsers)}
+              className="flex w-full items-center justify-center gap-1 text-xs text-[var(--brand-text)] opacity-50 hover:opacity-80 transition-opacity"
             >
-              {devLoading ? (
-                <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/40 border-t-white" />
-              ) : (
-                "✦ Entrar como cliente de prueba"
-              )}
+              {showTestUsers ? "▲" : "▼"} Usuarios de prueba
             </button>
+
+            {showTestUsers && (
+              <div className="space-y-2 rounded-xl border border-dashed border-[var(--brand-border)] bg-[var(--brand-bg)] p-3">
+                <p className="text-[10px] font-semibold uppercase tracking-widest text-[var(--brand-text)] opacity-40">
+                  Contraseña para todos: 123456789
+                </p>
+                <div className="space-y-1.5 text-xs text-[var(--brand-text)] opacity-70">
+                  <p><span className="font-semibold">admin</span> — Acceso total</p>
+                  <p><span className="font-semibold">cliente</span> — Cliente con puntos</p>
+                  <p><span className="font-semibold">empleada</span> — Agenda personal</p>
+                </div>
+              </div>
+            )}
           </div>
         )}
 

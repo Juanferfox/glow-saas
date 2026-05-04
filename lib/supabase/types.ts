@@ -46,10 +46,11 @@ export type Tenant = {
   cancellation_penalty: number;
   /**
    * Plan de suscripción del tenant.
-   * "white_label" reemplaza a "premium" (mantenido por compatibilidad).
-   * feature_solar es un add-on independiente del plan.
+   * Nombres actuales: starter | premium | premium_plus
+   * Nombres legacy mantenidos por compat: pro | white_label | free
+   * feature_solar y feature_whatsapp_bot son add-ons independientes del plan.
    */
-  plan: "free" | "starter" | "pro" | "white_label" | "premium";
+  plan: "starter" | "premium" | "premium_plus" | "pro" | "white_label" | "free";
   active: boolean;
   created_at: string;
 }

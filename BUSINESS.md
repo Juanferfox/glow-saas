@@ -67,31 +67,34 @@
 
 | Spa | País | Moneda | Plan | Estado |
 |---|---|---|---|---|
-| **Channel Spa** | Colombia 🇨🇴 | COP | Pro | Activo — servicios en proceso de carga |
+| **Channel Spa** | Colombia 🇨🇴 | COP | Premium | Activo — servicios en proceso de carga |
 | **Gio Spa** | USA 🇺🇸 | USD | Starter | Activo — servicios en proceso de carga |
+| **Glow Studio by Fabiana Madrigal** | Colombia 🇨🇴 | COP | Premium Plus | POC completo — tenant de demostración |
 
 > Logos pendientes — se instalarán cuando los clientes los envíen.  
-> Servicios son placeholder hasta recibir la lista oficial de cada spa.
+> Servicios de Channel Spa y Gio Spa son placeholder hasta recibir la lista oficial.
 
 ---
 
 ## Modelo de negocio
 
+Los spas pagan desde el primer mes. No hay plan free.
+
 ```
-Free          → 1 spa, 50 citas/mes, 1 trabajadora,
-                calendario básico                           → $0/mes
-
 Starter       → 3 trabajadoras, tienda, programa de puntos,
-                calendario + iCal sync, tratamientos multi-sesión,
-                recordatorios automáticos                   → $19/mes
+                calendario personal + iCal sync,
+                tratamientos multi-sesión,
+                recordatorios automáticos (email + push)    → $19/mes
 
-Pro           → 10 trabajadoras, multi-sucursal,
-                calendario de equipo, gestión de usuarios,
-                inventario, historial de ventas             → $39/mes
+Premium       → 10 trabajadoras,
+                calendario del equipo, gestión de usuarios,
+                inventario, historial de ventas,
+                reseñas y calificaciones                    → $39/mes
 
-White-label   → Todo Pro + dominio propio,
+Premium Plus  → Todo Premium + dominio propio,
                 branding 100% personalizado,
-                soporte prioritario                         → $79/mes
+                soporte prioritario,
+                multi-sucursal                              → $79/mes
 ```
 
 ### Add-ons (se contratan por separado, cualquier plan)
@@ -99,13 +102,30 @@ White-label   → Todo Pro + dominio propio,
 ```
 ☀️  Módulo de Bronceo Solar   → contador de sesiones UV, alertas,
                                 historial por cabina          → $9/mes
-🤖  WhatsApp Bot              → confirmaciones y recordatorios
-                                por WhatsApp                  → $15/mes
+
+🤖  Chatbot IA (WPP / Telegram) → asistente con IA que aprende de
+                                  conversaciones pasadas, escala al
+                                  dueño ante dudas nuevas y logea
+                                  todo para no fallar dos veces.
+                                  Canal: WhatsApp o Telegram
+                                  (WPP requiere número verificado
+                                  y tiene mayor costo de API)
+                                  Integración via n8n            → $25/mes
+                                  ⚠️ PENDIENTE DE DESARROLLO
+
+📋  Arma tu plan              → constructor de plan personalizado:
+                                el cliente selecciona módulos
+                                à la carte                    → precio dinámico
+                                ⚠️ PENDIENTE DE DESARROLLO
 ```
 
 > **¿Por qué solar es add-on y no parte del plan?**  
 > No todos los spas tienen camas UV. Es un equipo especializado que no tiene
 > sentido cobrar a quien no lo usa. Se activa por tenant bajo demanda.
+
+> **¿Por qué el chatbot es add-on?**  
+> El canal (WPP vs Telegram) varía por cliente y tiene costos de API muy
+> distintos. Se contrata individualmente con configuración personalizada.
 
 ---
 
@@ -139,8 +159,8 @@ White-label   → Todo Pro + dominio propio,
 - Tests de booking end-to-end con usuarios reales
 
 ### 🔜 Sprint 6 — Monetización
-- Stripe para planes Starter/Pro/White-label
-- Add-on Bronceo Solar vía Stripe
+- Stripe para planes Starter/Premium/Premium Plus
+- Add-on Bronceo Solar vía Stripe ($9/mes)
 - Portal de facturación self-service
 - Límites por plan (cuota de citas, trabajadoras)
 
@@ -148,3 +168,10 @@ White-label   → Todo Pro + dominio propio,
 - Sistema de reseñas con aprobación y respuesta del spa
 - Analytics para la dueña (ingresos, ocupación, retención, NPS)
 - Referidos con link único y tracking
+
+### 🔜 Sprint 8 — Chatbot IA + Arma tu plan ⚠️ PENDIENTE
+- Chatbot IA via n8n (WPP o Telegram a elección del cliente)
+  - Aprende de conversaciones pasadas
+  - Escala al dueño en situaciones desconocidas
+  - Log de fallos para aprendizaje continuo
+- "Arma tu plan" — constructor de plan personalizado (módulos à la carte)

@@ -11,6 +11,26 @@ interface BookingBody {
   date: string;   // "YYYY-MM-DD"
   time: string;   // "HH:MM"
   notes?: string;
+  referralCode?: string;
+}
+
+function isDevMode() {
+  return (
+    !process.env.NEXT_PUBLIC_SUPABASE_URL ||
+    process.env.NEXT_PUBLIC_SUPABASE_URL.includes("xxxx")
+  );
+}
+
+function getDevUser(cookieHeader: string | null): { id: string } | null {
+  if (!cookieHeader) return null;
+  try {
+    const match = cookieHeader.match(/dev-session=([^;]+)/);
+    if (!match || !match[1]) return null;
+    const profile = JSON.parse(Buffer.from(match[1], "base64").toString("utf-8"));
+    return { id: profile.id };
+  } catch {
+    return null;
+  }
 }
 
 /**
@@ -18,13 +38,22 @@ interface BookingBody {
  * Crea una nueva cita para el usuario autenticado.
  */
 export async function POST(request: NextRequest) {
-  const supabase = await createClient();
+  const dev = isDevMode();
+  let userId = "";
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) {
-    return NextResponse.json({ error: "No autenticado" }, { status: 401 });
+  if (dev) {
+    const devUser = getDevUser(request.headers.get("cookie"));
+    if (!devUser) {
+      return NextResponse.json({ error: "No autenticado" }, { status: 401 });
+    }
+    userId = devUser.id;
+  } else {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      return NextResponse.json({ error: "No autenticado" }, { status: 401 });
+    }
+    userId = user.id;
   }
 
   let body: BookingBody;
@@ -53,15 +82,11 @@ export async function POST(request: NextRequest) {
   const scheduledAt = new Date(`${date}T${time}:00`);
   const endsAt      = new Date(scheduledAt.getTime() + service.duration_min * 60_000);
 
-  const isDevMode =
-    !process.env.NEXT_PUBLIC_SUPABASE_URL ||
-    process.env.NEXT_PUBLIC_SUPABASE_URL.includes("xxxx");
-
-  if (isDevMode) {
+  if (dev) {
     const mockAppointment = {
       id:             `mock-${Date.now()}`,
       tenant_id:      tenant.id,
-      client_id:      user.id,
+      client_id:      userId,
       specialist_id:  specialistId,
       service_id:     serviceId,
       scheduled_at:   scheduledAt.toISOString(),
@@ -76,11 +101,13 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ appointment: mockAppointment }, { status: 201 });
   }
 
+  const supabase = await createClient();
+
   // Verificar que el usuario tiene profile en este tenant
   const { data: profile } = await supabase
     .from("profiles")
     .select("id")
-    .eq("id", user.id)
+    .eq("id", userId)
     .eq("tenant_id", tenant.id)
     .single();
 
@@ -95,7 +122,7 @@ export async function POST(request: NextRequest) {
     .from("appointments")
     .insert({
       tenant_id:    tenant.id,
-      client_id:    user.id,
+      client_id:    userId,
       specialist_id: specialistId,
       service_id:   serviceId,
       scheduled_at: scheduledAt.toISOString(),

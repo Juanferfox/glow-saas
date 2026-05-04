@@ -2,6 +2,7 @@ import { headers } from "next/headers";
 import { getTenant } from "@/lib/tenant";
 import { getLoyaltyData } from "@/lib/data/loyalty";
 import { PointsWallet } from "@/components/loyalty/PointsWallet";
+import { RedeemSection } from "@/components/loyalty/RedeemSection";
 import { Gift } from "lucide-react";
 
 interface PageProps {
@@ -49,6 +50,8 @@ export default async function PuntosPage({ params }: PageProps) {
         tenant={tenant}
         locale={locale}
       />
+
+      <RedeemSection balance={balance} />
     </div>
   );
 }

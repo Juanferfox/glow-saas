@@ -13,6 +13,17 @@ export interface ServiceRow {
   sort_order: number;
 }
 
+// Map editable en memoria para dev mode
+const editedServices = new Map<string, Partial<ServiceRow>>();
+
+export function updateDevService(id: string, changes: Partial<ServiceRow>) {
+  editedServices.set(id, { ...editedServices.get(id), ...changes });
+}
+
+export function getEditedServiceChanges(): Map<string, Partial<ServiceRow>> {
+  return editedServices;
+}
+
 // Servicios de dev hardcodeados (sin Supabase)
 const DEV_SERVICES: Record<string, ServiceRow[]> = {
   "dev-spa-luna": [
@@ -22,6 +33,28 @@ const DEV_SERVICES: Record<string, ServiceRow[]> = {
     { id: "sl-4", name: { es: "Pedicure spa" },        description: { es: "Pedicure completo con baño de pies y masaje" },            duration_min: 60, price: 55000,  category: "uñas",       image_url: null, sort_order: 4 },
     { id: "sl-5", name: { es: "Lifting de pestañas" }, description: { es: "Rizado semipermanente con efecto lifting natural" },       duration_min: 75, price: 95000,  category: "ojos",       image_url: null, sort_order: 5 },
     { id: "sl-6", name: { es: "Depilación facial" },   description: { es: "Depilación con hilo o cera para cejas y labio" },          duration_min: 30, price: 35000,  category: "depilacion", image_url: null, sort_order: 6 },
+  ],
+
+  // ── Glow Studio — POC completo con todos los servicios ───────────────────
+  "dev-glow-studio": [
+    // ─ Faciales ─────────────────────────────────────────────────────────────
+    { id: "fg-1",  name: { es: "Facial Glow Signature",            en: "Glow Signature Facial"        }, description: { es: "Ritual exclusivo de limpieza, sérum vitamina C y mascarilla iluminadora", en: "Exclusive ritual with cleansing, vitamin C serum and brightening mask" }, duration_min: 75, price: 120000, category: "facial",     image_url: null, sort_order: 1 },
+    { id: "fg-2",  name: { es: "Limpieza profunda + extracción",   en: "Deep Cleanse & Extraction"    }, description: { es: "Limpieza, exfoliación enzimática y extracción profesional de comedones",  en: "Cleansing, enzyme exfoliation and professional comedone extraction"    }, duration_min: 60, price: 85000,  category: "facial",     image_url: null, sort_order: 2 },
+    { id: "fg-3",  name: { es: "Hydrojelly Facial",                en: "Hydrojelly Facial"            }, description: { es: "Mascarilla jelly hidratante con ácido hialurónico y colágeno marino",     en: "Hydrating jelly mask with hyaluronic acid and marine collagen"         }, duration_min: 50, price: 95000,  category: "facial",     image_url: null, sort_order: 3 },
+    // ─ Masajes ──────────────────────────────────────────────────────────────
+    { id: "fg-4",  name: { es: "Masaje relajante",                 en: "Relaxation Massage"           }, description: { es: "Masaje sueco de cuerpo completo con aceites esenciales de lavanda",      en: "Swedish full-body massage with lavender essential oils"                }, duration_min: 60, price: 120000, category: "masaje",     image_url: null, sort_order: 4 },
+    { id: "fg-5",  name: { es: "Masaje de tejido profundo",        en: "Deep Tissue Massage"          }, description: { es: "Técnica de presión profunda para liberar tensión muscular crónica",       en: "Deep pressure technique to release chronic muscle tension"             }, duration_min: 75, price: 145000, category: "masaje",     image_url: null, sort_order: 5 },
+    { id: "fg-6",  name: { es: "Masaje de piedras calientes",      en: "Hot Stone Massage"            }, description: { es: "Terapia térmica con piedras de basalto y aceites aromáticos",             en: "Thermal therapy with basalt stones and aromatic oils"                  }, duration_min: 90, price: 180000, category: "masaje",     image_url: null, sort_order: 6 },
+    // ─ Uñas ─────────────────────────────────────────────────────────────────
+    { id: "fg-7",  name: { es: "Manicure permanente",              en: "Gel Manicure"                 }, description: { es: "Esmaltado semipermanente con tratamiento de cutículas y masaje de manos", en: "Semi-permanent polish with cuticle care and hand massage"              }, duration_min: 45, price: 60000,  category: "uñas",       image_url: null, sort_order: 7 },
+    { id: "fg-8",  name: { es: "Pedicure spa completo",            en: "Spa Pedicure"                 }, description: { es: "Baño de pies, exfoliación, masaje de piernas y esmaltado con acabado spa", en: "Foot bath, scrub, leg massage and spa-finish polish"                   }, duration_min: 60, price: 70000,  category: "uñas",       image_url: null, sort_order: 8 },
+    // ─ Ojos y cejas ─────────────────────────────────────────────────────────
+    { id: "fg-9",  name: { es: "Lifting de pestañas",              en: "Lash Lift"                    }, description: { es: "Rizado semipermanente de pestañas con efecto lifting y nutrición — plan de 4 sesiones disponible", en: "Semi-permanent lash curl with lifting effect and nourishment — 4-session plan available" }, duration_min: 75, price: 95000, category: "ojos", image_url: null, sort_order: 9 },
+    { id: "fg-10", name: { es: "Diseño de cejas con henna",        en: "Henna Brow Design"            }, description: { es: "Diseño profesional de cejas con depilación y tintura de henna",           en: "Professional brow shaping with wax removal and henna tint"            }, duration_min: 45, price: 55000,  category: "ojos",       image_url: null, sort_order: 10 },
+    // ─ Depilación ───────────────────────────────────────────────────────────
+    { id: "fg-11", name: { es: "Depilación con cera (zona media)", en: "Waxing (Half Body)"           }, description: { es: "Depilación de piernas, bikini o axilas con cera tibia hipoalergénica",    en: "Leg, bikini or underarm waxing with hypoallergenic warm wax"           }, duration_min: 45, price: 65000,  category: "depilacion", image_url: null, sort_order: 11 },
+    // ─ Corporal ─────────────────────────────────────────────────────────────
+    { id: "fg-12", name: { es: "Envoltura corporal detox",         en: "Detox Body Wrap"              }, description: { es: "Envoltura con arcilla volcánica y algas para eliminar toxinas y reafirmar", en: "Volcanic clay and algae wrap to detox and firm the skin"              }, duration_min: 90, price: 160000, category: "corporal",   image_url: null, sort_order: 12 },
   ],
 
   // ── Channel Spa — Colombia (placeholder hasta recibir lista real) ──────────
@@ -110,7 +143,12 @@ export const getServices = cache(async (tenantId: string): Promise<ServiceRow[]>
     !process.env.NEXT_PUBLIC_SUPABASE_URL ||
     process.env.NEXT_PUBLIC_SUPABASE_URL.includes("xxxx")
   ) {
-    return DEV_SERVICES[tenantId] ?? [];
+    const base = DEV_SERVICES[tenantId] ?? [];
+    return base.map((s) => {
+      const edits = editedServices.get(s.id);
+      if (!edits) return s;
+      return { ...s, ...edits };
+    });
   }
 
   try {
@@ -126,6 +164,11 @@ export const getServices = cache(async (tenantId: string): Promise<ServiceRow[]>
     if (error || !data) return [];
     return data as ServiceRow[];
   } catch {
-    return DEV_SERVICES[tenantId] ?? [];
+    const base = DEV_SERVICES[tenantId] ?? [];
+    return base.map((s) => {
+      const edits = editedServices.get(s.id);
+      if (!edits) return s;
+      return { ...s, ...edits };
+    });
   }
 });

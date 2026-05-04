@@ -149,7 +149,173 @@ const DEV_TREATMENT_PLANS: TreatmentPlan[] = [
     active: true,
     created_at: new Date(now.getTime() - 14 * 86_400_000).toISOString(),
   },
+  // ── Glow Studio ─────────────────────────────────────────────────────────────
+  {
+    id: "fg-plan-1",
+    tenant_id: "dev-glow-studio",
+    client_id: "fg-client-1",
+    service_id: "fg-9",
+    name: { es: "Lifting de pestañas — 4 sesiones", en: "Lash Lift — 4 sessions" },
+    total_sessions: 4,
+    completed_sessions: 2,
+    notes: "Clienta con pestañas finas, usar solución suave",
+    started_at: new Date(now.getTime() - 45 * 86_400_000).toISOString(),
+    expires_at: new Date(now.getTime() + 90 * 86_400_000).toISOString(),
+    active: true,
+    created_at: new Date(now.getTime() - 45 * 86_400_000).toISOString(),
+  },
+  {
+    id: "fg-plan-2",
+    tenant_id: "dev-glow-studio",
+    client_id: "fg-client-2",
+    service_id: "fg-5",
+    name: { es: "Masaje tejido profundo — 6 sesiones", en: "Deep Tissue Massage — 6 sessions" },
+    total_sessions: 6,
+    completed_sessions: 1,
+    notes: "Contractura lumbar crónica, presión media-alta",
+    started_at: new Date(now.getTime() - 14 * 86_400_000).toISOString(),
+    expires_at: new Date(now.getTime() + 180 * 86_400_000).toISOString(),
+    active: true,
+    created_at: new Date(now.getTime() - 14 * 86_400_000).toISOString(),
+  },
 ];
+
+// ── Glow Studio dev events ───────────────────────────────────────────────────
+const DEV_GLOW_EVENTS: CalendarEvent[] = [
+  {
+    id: "fg-ev-1",
+    title: "Facial Glow Signature",
+    start: d(0, 10),
+    end: d(0, 11, 15),
+    status: "confirmed",
+    specialist_name: "Luna Vargas",
+    specialist_id: "fg-sp-1",
+    client_name: "Sofía Reyes",
+    color: "#d4826a",
+  },
+  {
+    id: "fg-ev-2",
+    title: "Masaje relajante",
+    start: d(0, 12),
+    end: d(0, 13),
+    status: "confirmed",
+    specialist_name: "Catalina Peña",
+    specialist_id: "fg-sp-2",
+    client_name: "Mariana Ríos",
+    color: "#a855f7",
+  },
+  {
+    id: "fg-ev-3",
+    title: "Lifting de pestañas",
+    start: d(1, 9),
+    end: d(1, 10, 15),
+    status: "pending",
+    specialist_name: "Luna Vargas",
+    specialist_id: "fg-sp-1",
+    client_name: "Sofía Reyes",
+    color: "#d4826a",
+    treatment_plan_id: "fg-plan-1",
+    session_number: 3,
+    total_sessions: 4,
+  },
+  {
+    id: "fg-ev-4",
+    title: "Manicure permanente",
+    start: d(1, 11),
+    end: d(1, 11, 45),
+    status: "confirmed",
+    specialist_name: "Valentina Mora",
+    specialist_id: "fg-sp-3",
+    client_name: "Isabella Torres",
+    color: "#06b6d4",
+  },
+  {
+    id: "fg-ev-5",
+    title: "Masaje de tejido profundo",
+    start: d(1, 14),
+    end: d(1, 15, 15),
+    status: "confirmed",
+    specialist_name: "Catalina Peña",
+    specialist_id: "fg-sp-2",
+    client_name: "Mariana Ríos",
+    color: "#a855f7",
+    treatment_plan_id: "fg-plan-2",
+    session_number: 2,
+    total_sessions: 6,
+  },
+  {
+    id: "fg-ev-6",
+    title: "Envoltura corporal detox",
+    start: d(2, 10),
+    end: d(2, 11, 30),
+    status: "confirmed",
+    specialist_name: "Catalina Peña",
+    specialist_id: "fg-sp-2",
+    client_name: "Daniela Castro",
+    color: "#a855f7",
+  },
+  {
+    id: "fg-ev-7",
+    title: "Diseño de cejas con henna",
+    start: d(2, 12),
+    end: d(2, 12, 45),
+    status: "pending",
+    specialist_name: "Luna Vargas",
+    specialist_id: "fg-sp-1",
+    client_name: "Isabella Torres",
+    color: "#d4826a",
+  },
+  {
+    id: "fg-ev-8",
+    title: "Pedicure spa completo",
+    start: d(3, 9),
+    end: d(3, 10),
+    status: "confirmed",
+    specialist_name: "Valentina Mora",
+    specialist_id: "fg-sp-3",
+    client_name: "Sofía Reyes",
+    color: "#06b6d4",
+  },
+  {
+    id: "fg-ev-9",
+    title: "Hydrojelly Facial",
+    start: d(3, 11),
+    end: d(3, 11, 50),
+    status: "confirmed",
+    specialist_name: "Andrea Salcedo",
+    specialist_id: "fg-sp-4",
+    client_name: "Daniela Castro",
+    color: "#10b981",
+  },
+  {
+    id: "fg-ev-10",
+    title: "Masaje de piedras calientes",
+    start: d(5, 15),
+    end: d(5, 16, 30),
+    status: "pending",
+    specialist_name: "Catalina Peña",
+    specialist_id: "fg-sp-2",
+    client_name: "Mariana Ríos",
+    color: "#a855f7",
+  },
+];
+
+// Mapa de eventos por tenant (dev mode)
+const DEV_EVENTS_BY_TENANT: Record<string, CalendarEvent[]> = {
+  "dev-spa-luna":    DEV_EVENTS,
+  "dev-glow-studio": DEV_GLOW_EVENTS,
+};
+
+// userId → specialist_id (para filtro en modo dev)
+const DEV_USER_SPECIALIST: Record<string, string> = {
+  "dev-worker-1":  "sl-sp-1",
+  "dev-worker-2":  "sl-sp-2",
+  "dev-worker-3":  "sl-sp-3",
+  "fg-worker-1":   "fg-sp-1",
+  "fg-worker-2":   "fg-sp-2",
+  "fg-worker-3":   "fg-sp-3",
+  "fg-worker-4":   "fg-sp-4",
+};
 
 // ─── Funciones de datos ──────────────────────────────────────────────────────
 
@@ -168,11 +334,14 @@ export async function getCalendarEvents(
     process.env.NEXT_PUBLIC_SUPABASE_URL.includes("xxxx");
 
   if (isDevMode) {
-    // Para trabajadora: solo su especialista asignada (demo: Valentina)
+    const tenantEvents = DEV_EVENTS_BY_TENANT[tenantId] ?? DEV_EVENTS;
     if (role === "trabajadora") {
-      return DEV_EVENTS.filter((e) => e.specialist_id === "sl-sp-1");
+      const specialistId = DEV_USER_SPECIALIST[userId];
+      return specialistId
+        ? tenantEvents.filter((e) => e.specialist_id === specialistId)
+        : tenantEvents;
     }
-    return DEV_EVENTS;
+    return tenantEvents;
   }
 
   const supabase = await createClient();
@@ -237,7 +406,9 @@ export async function getTreatmentPlans(
     process.env.NEXT_PUBLIC_SUPABASE_URL.includes("xxxx");
 
   if (isDevMode) {
-    return DEV_TREATMENT_PLANS.filter((p) => p.tenant_id === "dev-spa-luna");
+    return DEV_TREATMENT_PLANS.filter(
+      (p) => p.tenant_id === tenantId && p.client_id === clientId
+    );
   }
 
   const supabase = await createClient();

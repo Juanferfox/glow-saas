@@ -25,9 +25,40 @@ const DEV_SPECIALISTS: Record<string, Specialist[]> = {
     { id: "gi-sp-3", tenant_id: "dev-gio-spa", profile_id: null, name: "Valeria Santos",   bio: { en: "Nail technician and lash/brow specialist",                        es: "Técnica en uñas y especialista en cejas/pestañas"          }, avatar_url: null, services: ["gi-4","gi-5","gi-6"], active: true, created_at: "2024-01-01" },
   ],
 
+  // ── Glow Studio ───────────────────────────────────────────────────────────
+  "dev-glow-studio": [
+    { id: "fg-sp-1", tenant_id: "dev-glow-studio", profile_id: "fg-worker-1", name: "Luna Vargas",     bio: { es: "Esteticista especializada en faciales y tratamientos de ojos con 7 años de experiencia", en: "Esthetician specializing in facials and eye treatments with 7 years experience" }, avatar_url: null, services: ["fg-1","fg-2","fg-3","fg-9","fg-10"], active: true, created_at: "2024-01-01" },
+    { id: "fg-sp-2", tenant_id: "dev-glow-studio", profile_id: "fg-worker-2", name: "Catalina Peña",   bio: { es: "Masajista terapéutica certificada en técnicas suecas, tejido profundo y piedras calientes", en: "Certified massage therapist in Swedish, deep tissue and hot stone techniques" }, avatar_url: null, services: ["fg-4","fg-5","fg-6","fg-12"], active: true, created_at: "2024-01-01" },
+    { id: "fg-sp-3", tenant_id: "dev-glow-studio", profile_id: "fg-worker-3", name: "Valentina Mora",  bio: { es: "Técnica en uñas y especialista en depilación con cera hipoalergénica", en: "Nail technician and hypoallergenic wax depilation specialist" }, avatar_url: null, services: ["fg-7","fg-8","fg-11"], active: true, created_at: "2024-01-01" },
+    { id: "fg-sp-4", tenant_id: "dev-glow-studio", profile_id: "fg-worker-4", name: "Andrea Salcedo",  bio: { es: "Especialista integral en bienestar y belleza — atiende múltiples categorías de servicios", en: "Full-service beauty and wellness specialist across multiple service categories" }, avatar_url: null, services: ["fg-1","fg-2","fg-4","fg-7","fg-9","fg-11"], active: true, created_at: "2024-01-01" },
+  ],
+
   "dev-glam-studio": [
     { id: "gs-sp-1", tenant_id: "dev-glam-studio", profile_id: null, name: "Alex Ramírez",  bio: { en: "Senior stylist with 10 years in the industry", es: "Estilista senior con 10 años en la industria" }, avatar_url: null, services: ["gs-1","gs-2","gs-3","gs-4"], active: true, created_at: "2024-01-01" },
     { id: "gs-sp-2", tenant_id: "dev-glam-studio", profile_id: null, name: "Sofia Nails",   bio: { en: "Nail art specialist", es: "Especialista en nail art" },              avatar_url: null, services: ["gs-5"], active: true, created_at: "2024-01-01" },
+  ],
+
+  // ── FM Glow Studio ─────────────────────────────────────────────────────────
+  "dev-fm-glow-studio": [
+    {
+      id: "dev-sp-fmglow-1",
+      tenant_id: "dev-fm-glow-studio",
+      profile_id: "dev-empleada-fmglow",
+      name: "Ana García",
+      bio: { es: "Especialista en uñas, pestañas y tratamientos faciales en FM Glow Studio" },
+      avatar_url: null,
+      services: [
+        "fmg-u1","fmg-u2","fmg-u3","fmg-u4","fmg-u5","fmg-u6","fmg-u7","fmg-u8","fmg-u9",
+        "fmg-p1","fmg-p2","fmg-p3","fmg-p4","fmg-p5",
+        "fmg-c1","fmg-c2","fmg-c3",
+        "fmg-l1","fmg-l2","fmg-l3",
+        "fmg-k1","fmg-k2","fmg-k3",
+        "fmg-f1","fmg-f2","fmg-f3","fmg-f4",
+        "fmg-b1","fmg-b2","fmg-b3","fmg-b4","fmg-b5",
+      ],
+      active: true,
+      created_at: "2026-05-01T00:00:00Z",
+    },
   ],
 };
 
@@ -69,7 +100,9 @@ const DEV_SCHEDULES: Record<string, SpecialistSchedule[]> = {
   "dev-spa-luna":     buildSchedules("dev-spa-luna",     DEV_SPECIALISTS["dev-spa-luna"]!),
   "dev-channel-spa":  buildSchedules("dev-channel-spa",  DEV_SPECIALISTS["dev-channel-spa"]!),
   "dev-gio-spa":      buildSchedules("dev-gio-spa",      DEV_SPECIALISTS["dev-gio-spa"]!),
+  "dev-glow-studio":  buildSchedules("dev-glow-studio",  DEV_SPECIALISTS["dev-glow-studio"]!),
   "dev-glam-studio":  buildSchedules("dev-glam-studio",  DEV_SPECIALISTS["dev-glam-studio"]!),
+  "dev-fm-glow-studio": buildSchedules("dev-fm-glow-studio", DEV_SPECIALISTS["dev-fm-glow-studio"]!),
 };
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
@@ -79,6 +112,17 @@ function isDevMode() {
     !process.env.NEXT_PUBLIC_SUPABASE_URL ||
     process.env.NEXT_PUBLIC_SUPABASE_URL.includes("xxxx")
   );
+}
+
+// Map editable en memoria para horarios en dev mode
+const editedSchedules = new Map<string, SpecialistSchedule[]>();
+
+export function updateDevSchedule(specialistId: string, schedules: SpecialistSchedule[]) {
+  editedSchedules.set(specialistId, schedules);
+}
+
+export function getDevSchedule(specialistId: string): SpecialistSchedule[] | undefined {
+  return editedSchedules.get(specialistId);
 }
 
 // ─── Exports ────────────────────────────────────────────────────────────────
@@ -111,7 +155,15 @@ export const getSpecialists = cache(
  */
 export const getSchedules = cache(
   async (tenantId: string): Promise<SpecialistSchedule[]> => {
-    if (isDevMode()) return DEV_SCHEDULES[tenantId] ?? [];
+    if (isDevMode()) {
+      const base = DEV_SCHEDULES[tenantId] ?? [];
+      return base.map((s) => {
+        const edits = editedSchedules.get(s.specialist_id);
+        if (!edits) return s;
+        const found = edits.find((e) => e.id === s.id);
+        return found ?? s;
+      });
+    }
 
     try {
       const supabase = await createServiceClient();
@@ -123,7 +175,13 @@ export const getSchedules = cache(
       if (error || !data) return [];
       return data as SpecialistSchedule[];
     } catch {
-      return DEV_SCHEDULES[tenantId] ?? [];
+      const base = DEV_SCHEDULES[tenantId] ?? [];
+      return base.map((s) => {
+        const edits = editedSchedules.get(s.specialist_id);
+        if (!edits) return s;
+        const found = edits.find((e) => e.id === s.id);
+        return found ?? s;
+      });
     }
   }
 );

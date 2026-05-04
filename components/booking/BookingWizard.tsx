@@ -49,7 +49,7 @@ export function BookingWizard({ tenant, locale, services }: BookingWizardProps) 
     setStep("confirm");
   }
 
-  async function handleConfirm(notes: string) {
+  async function handleConfirm(notes: string, referralCode: string) {
     if (!selectedService || !selectedDate || !selectedSlot) return;
 
     const response = await fetch("/api/booking", {
@@ -62,6 +62,7 @@ export function BookingWizard({ tenant, locale, services }: BookingWizardProps) 
         date: selectedDate,
         time: selectedSlot.time,
         notes,
+        referralCode,
       }),
     });
 
