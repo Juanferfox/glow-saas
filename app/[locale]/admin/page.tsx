@@ -3,6 +3,7 @@ import { getTenant } from "@/lib/tenant";
 import { getSalesHistory } from "@/lib/data/inventory";
 import { getMyAppointments } from "@/lib/data/appointments";
 import { DashboardActions } from "@/components/admin/DashboardActions";
+import { GananciasOverview } from "@/components/admin/GananciasOverview";
 import {
   Users,
   Calendar,
@@ -113,6 +114,9 @@ export default async function AdminDashboardPage({ params }: PageProps) {
           </div>
         ))}
       </div>
+
+      {/* Dashboard de Ganancias */}
+      <GananciasOverview />
 
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
         {/* Próximas Citas */}

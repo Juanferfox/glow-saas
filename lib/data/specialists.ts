@@ -6,6 +6,13 @@ import type { Specialist, SpecialistSchedule } from "@/lib/supabase/types";
 // ─── Dev data ────────────────────────────────────────────────────────────────
 
 const DEV_SPECIALISTS: Record<string, Specialist[]> = {
+  // ── FM Glow Studio ─────────────────────────────────────────────────────────
+  "dev-fm-glow-studio": [
+    { id: "fmg-sp-1", tenant_id: "dev-fm-glow-studio", profile_id: "dev-empleada-fmglow", name: "Ana García",      bio: { es: "Especialista en uñas, pestañas y cejas con 5 años de experiencia" },                    avatar_url: null, services: ["fmg-u1","fmg-u2","fmg-u3","fmg-p1","fmg-p2","fmg-c1","fmg-c2"], active: true, created_at: "2024-01-01" },
+    { id: "fmg-sp-2", tenant_id: "dev-fm-glow-studio", profile_id: null,                  name: "Valentina López", bio: { es: "Terapeuta facial y corporal certificada, especialista en tratamientos PRP" },             avatar_url: null, services: ["fmg-f1","fmg-f2","fmg-f3","fmg-f4","fmg-corp1","fmg-corp2"], active: true, created_at: "2024-01-01" },
+    { id: "fmg-sp-3", tenant_id: "dev-fm-glow-studio", profile_id: null,                  name: "Sofía Herrera",   bio: { es: "Estilista capilar con especialización en keratina y tratamientos reparadores" },        avatar_url: null, services: ["fmg-cap1","fmg-cap2","fmg-cap3","fmg-l1","fmg-l2","fmg-l3"], active: true, created_at: "2024-01-01" },
+  ],
+  // ── Spa Luna ───────────────────────────────────────────────────────────────
   "dev-spa-luna": [
     { id: "sl-sp-1", tenant_id: "dev-spa-luna", profile_id: null, name: "Valentina Ríos",   bio: { es: "Especialista en tratamientos faciales con 8 años de experiencia" }, avatar_url: null, services: ["sl-1","sl-5","sl-6"], active: true, created_at: "2024-01-01" },
     { id: "sl-sp-2", tenant_id: "dev-spa-luna", profile_id: null, name: "Camila Torres",    bio: { es: "Masajista terapéutica certificada" },                               avatar_url: null, services: ["sl-2","sl-1"], active: true, created_at: "2024-01-01" },
@@ -66,10 +73,11 @@ function buildSchedules(
 }
 
 const DEV_SCHEDULES: Record<string, SpecialistSchedule[]> = {
-  "dev-spa-luna":     buildSchedules("dev-spa-luna",     DEV_SPECIALISTS["dev-spa-luna"]!),
-  "dev-channel-spa":  buildSchedules("dev-channel-spa",  DEV_SPECIALISTS["dev-channel-spa"]!),
-  "dev-gio-spa":      buildSchedules("dev-gio-spa",      DEV_SPECIALISTS["dev-gio-spa"]!),
-  "dev-glam-studio":  buildSchedules("dev-glam-studio",  DEV_SPECIALISTS["dev-glam-studio"]!),
+  "dev-fm-glow-studio": buildSchedules("dev-fm-glow-studio", DEV_SPECIALISTS["dev-fm-glow-studio"]!),
+  "dev-spa-luna":       buildSchedules("dev-spa-luna",       DEV_SPECIALISTS["dev-spa-luna"]!),
+  "dev-channel-spa":    buildSchedules("dev-channel-spa",    DEV_SPECIALISTS["dev-channel-spa"]!),
+  "dev-gio-spa":        buildSchedules("dev-gio-spa",        DEV_SPECIALISTS["dev-gio-spa"]!),
+  "dev-glam-studio":    buildSchedules("dev-glam-studio",    DEV_SPECIALISTS["dev-glam-studio"]!),
 };
 
 // ─── Helpers ────────────────────────────────────────────────────────────────

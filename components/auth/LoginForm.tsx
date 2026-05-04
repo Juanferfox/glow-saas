@@ -26,11 +26,17 @@ const HAS_SUPABASE =
 
 type Mode = "login" | "register";
 
+const DEV_HINTS = [
+  { username: "admin",    label: "Admin",    desc: "Panel completo · gestión total",    badge: "bg-rose-500/10 text-rose-600" },
+  { username: "cliente",  label: "Cliente",  desc: "Agendar · puntos · referidos",       badge: "bg-violet-500/10 text-violet-600" },
+  { username: "empleada", label: "Empleada", desc: "Mi agenda · sesiones del día",       badge: "bg-emerald-500/10 text-emerald-600" },
+];
+
 export function LoginForm({ locale, tenant, errorCode, next }: LoginFormProps) {
   const router = useRouter();
   const [oauthLoading, setOauthLoading] = useState<string | null>(null);
   const [emailLoading, setEmailLoading] = useState(false);
-  const [devLoading, setDevLoading] = useState(false);
+  const [devLoading, setDevLoading] = useState<string | null>(null);
   const [mode, setMode] = useState<Mode>("login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -46,6 +52,10 @@ export function LoginForm({ locale, tenant, errorCode, next }: LoginFormProps) {
       : `/${locale}/auth/callback`;
 
   const destination = next ?? `/${locale}`;
+
+  function tenantParam() {
+    return tenant ? `?tenant=${tenant.slug}` : "";
+  }
 
   async function handleOAuth(provider: "google" | "facebook") {
     if (!supabase) return;
@@ -93,17 +103,40 @@ export function LoginForm({ locale, tenant, errorCode, next }: LoginFormProps) {
     setEmailLoading(false);
   }
 
-  async function handleDevLogin() {
-    setDevLoading(true);
-    await fetch("/api/dev-auth", { method: "POST" });
-    const dest = next
-      ? next
-      : `/${locale}${tenant ? `?tenant=${tenant.slug}` : ""}`;
+  async function handleDevLogin(username: string) {
+    setDevLoading(username);
+    setFormError(null);
+
+    const res = await fetch("/api/dev-auth", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ identifier: username, password: "123456789" }),
+    });
+
+    if (!res.ok) {
+      setFormError("Error al iniciar sesión de prueba.");
+      setDevLoading(null);
+      return;
+    }
+
+    const { profile } = await res.json();
+
+    // Redirigir según rol
+    let dest = `/${locale}${tenantParam()}`;
+    if (profile?.role === "admin") {
+      dest = `/${locale}/admin${tenantParam()}`;
+    } else if (profile?.role === "trabajadora") {
+      dest = `/${locale}/calendario${tenantParam()}`;
+    }
+
+    if (next) dest = next;
+
     router.push(dest);
     router.refresh();
   }
 
-  const errorMessage = formError ?? (errorCode ? (ERROR_MESSAGES[errorCode] ?? "Error al iniciar sesión.") : null);
+  const errorMessage =
+    formError ?? (errorCode ? (ERROR_MESSAGES[errorCode] ?? "Error al iniciar sesión.") : null);
 
   return (
     <div className="flex min-h-[80vh] items-center justify-center px-4 py-16">
@@ -142,32 +175,41 @@ export function LoginForm({ locale, tenant, errorCode, next }: LoginFormProps) {
 
         {/* ── DEV MODE ── */}
         {!HAS_SUPABASE && (
-          <div className="space-y-4">
+          <div className="space-y-3">
             <div className="rounded-xl border border-dashed border-[var(--brand-border)] bg-[var(--brand-bg)] px-4 py-3 text-center">
               <p className="text-xs font-semibold uppercase tracking-widest text-[var(--brand-primary)] opacity-70">
                 Modo desarrollo
               </p>
               <p className="mt-1 text-xs text-[var(--brand-text)] opacity-50">
-                Supabase no está configurado. Usa la sesión de prueba.
+                Selecciona un usuario para probar. Contraseña: <span className="font-mono font-bold">123456789</span>
               </p>
             </div>
 
-            <button
-              onClick={handleDevLogin}
-              disabled={devLoading}
-              className={cn(
-                "flex w-full items-center justify-center gap-2 rounded-xl py-3 text-sm font-semibold text-white shadow",
-                "transition-all duration-200 hover:-translate-y-0.5 hover:opacity-90",
-                "disabled:opacity-50 disabled:cursor-not-allowed disabled:translate-y-0"
-              )}
-              style={{ backgroundColor: "var(--brand-primary)" }}
-            >
-              {devLoading ? (
-                <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/40 border-t-white" />
-              ) : (
-                "✦ Entrar como cliente de prueba"
-              )}
-            </button>
+            {DEV_HINTS.map(({ username, label, desc, badge }) => (
+              <button
+                key={username}
+                onClick={() => handleDevLogin(username)}
+                disabled={devLoading !== null}
+                className={cn(
+                  "flex w-full items-center justify-between gap-3 rounded-xl border border-[var(--brand-border)]",
+                  "bg-[var(--brand-bg)] px-4 py-3 text-left transition-all duration-150",
+                  "hover:border-[var(--brand-primary)] hover:shadow-md",
+                  "disabled:opacity-50 disabled:cursor-not-allowed"
+                )}
+              >
+                <div>
+                  <p className="text-sm font-semibold text-[var(--brand-text)]">{label}</p>
+                  <p className="text-[11px] opacity-50 text-[var(--brand-text)]">{desc}</p>
+                </div>
+                {devLoading === username ? (
+                  <span className="h-4 w-4 animate-spin rounded-full border-2 border-[var(--brand-primary)]/30 border-t-[var(--brand-primary)]" />
+                ) : (
+                  <span className={cn("rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide", badge)}>
+                    {username}
+                  </span>
+                )}
+              </button>
+            ))}
           </div>
         )}
 

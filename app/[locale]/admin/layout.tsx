@@ -1,13 +1,14 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { headers } from "next/headers";
+import { headers, cookies } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
 import { getTenant } from "@/lib/tenant";
 import {
   CalendarDays, ShoppingBag, Star, Settings,
   Users, CalendarRange, LayoutDashboard,
-  Bell, TrendingUp,
+  Bell, TrendingUp, Scissors,
 } from "lucide-react";
+import type { DevProfile } from "@/app/api/dev-auth/route";
 
 interface AdminLayoutProps {
   children: React.ReactNode;
@@ -33,8 +34,23 @@ export default async function AdminLayout({ children, params }: AdminLayoutProps
   const tenant      = tenantSlug ? await getTenant(tenantSlug) : null;
   if (!tenant) redirect(`/${locale}`);
 
-  // Dev: role simulado = admin para probar todo
+  // Dev: leer rol desde la cookie dev-session
   const userRoleArr: ["admin" | "recepcionista" | "trabajadora"] = ["admin"];
+
+  if (isDevMode) {
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const raw = (cookies() as any).get?.("dev-session")?.value as string | undefined;
+      if (!raw || raw === "1") redirect(`/${locale}/auth/login?next=/${locale}/admin`);
+      const devProfile = JSON.parse(decodeURIComponent(raw)) as DevProfile;
+      if (devProfile.role !== "admin" && devProfile.role !== "trabajadora") {
+        redirect(`/${locale}`);
+      }
+      if (devProfile.role === "trabajadora") userRoleArr[0] = "trabajadora";
+    } catch {
+      redirect(`/${locale}/auth/login`);
+    }
+  }
 
   if (!isDevMode) {
     const supabase = await createClient();
@@ -60,14 +76,16 @@ export default async function AdminLayout({ children, params }: AdminLayoutProps
   // ── Menú según rol ───────────────────────────────────────────────────────
   type NavItem = { href: string; label: string; icon: typeof CalendarDays; adminOnly?: boolean; workerHidden?: boolean };
   const navItems: NavItem[] = [
+    { href: `/${locale}/admin`,               label: "Dashboard",      icon: TrendingUp,    workerHidden: true },
     { href: `/${locale}/admin/agenda`,        label: "Agenda hoy",     icon: LayoutDashboard },
     { href: `/${locale}/admin/calendario`,    label: "Calendario",     icon: CalendarRange },
-    { href: `/${locale}/admin/notificaciones`,label: "Notificaciones", icon: Bell,         workerHidden: true },
-    { href: `/${locale}/admin/inventario`,    label: "Inventario",     icon: ShoppingBag,  workerHidden: true },
-    { href: `/${locale}/admin/fidelizacion`,  label: "Fidelización",   icon: Star,         workerHidden: true },
-    { href: `/${locale}/admin/ventas`,        label: "Ventas",         icon: TrendingUp,   workerHidden: true, adminOnly: false },
-    { href: `/${locale}/admin/usuarios`,      label: "Usuarios",       icon: Users,        adminOnly: true },
-    { href: `/${locale}/admin/configuracion`, label: "Configuración",  icon: Settings,     adminOnly: true },
+    { href: `/${locale}/admin/servicios`,     label: "Servicios",      icon: Scissors,      workerHidden: true, adminOnly: true },
+    { href: `/${locale}/admin/notificaciones`,label: "Notificaciones", icon: Bell,          workerHidden: true },
+    { href: `/${locale}/admin/inventario`,    label: "Inventario",     icon: ShoppingBag,   workerHidden: true },
+    { href: `/${locale}/admin/fidelizacion`,  label: "Fidelización",   icon: Star,          workerHidden: true },
+    { href: `/${locale}/admin/ventas`,        label: "Ventas",         icon: TrendingUp,    workerHidden: true, adminOnly: false },
+    { href: `/${locale}/admin/usuarios`,      label: "Usuarios",       icon: Users,         adminOnly: true },
+    { href: `/${locale}/admin/configuracion`, label: "Configuración",  icon: Settings,      adminOnly: true },
   ];
 
   const visibleItems = navItems.filter((item) => {

@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
-import { headers } from "next/headers";
+import { headers, cookies } from "next/headers";
 import Image from "next/image";
-import { User, Palette, Shield } from "lucide-react";
+import { User, Palette, Shield, Gift, Activity } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { getTenant } from "@/lib/tenant";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
@@ -12,62 +12,80 @@ import { getMyAppointments } from "@/lib/data/appointments";
 import { getMyNotifications } from "@/lib/data/notifications";
 import { UpcomingAppointments } from "@/components/profile/UpcomingAppointments";
 import { NotificationCenter } from "@/components/profile/NotificationCenter";
+import { ReferralSection } from "@/components/profile/ReferralSection";
+import { EmpleadaStats } from "@/components/profile/EmpleadaStats";
 import { Calendar, Bell } from "lucide-react";
+import type { DevProfile } from "@/app/api/dev-auth/route";
 
 interface PageProps {
   params: Promise<{ locale: string }>;
 }
 
-/**
- * Página de perfil del usuario autenticado.
- * Muestra: nombre, avatar, idioma activo, selector de tema y toggle de notificaciones.
- * Redirige al login si no hay sesión.
- */
+const IS_DEV =
+  !process.env.NEXT_PUBLIC_SUPABASE_URL ||
+  process.env.NEXT_PUBLIC_SUPABASE_URL.includes("xxxx");
+
+function readDevSession(): DevProfile | null {
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const raw = (cookies() as any).get?.("dev-session")?.value as string | undefined;
+    if (!raw || raw === "1") return null;
+    return JSON.parse(decodeURIComponent(raw)) as DevProfile;
+  } catch {
+    return null;
+  }
+}
+
 export default async function PerfilPage({ params }: PageProps) {
   const { locale } = await params;
-
-  // Verificar sesión + cargar tenant (se necesita el slug para el redirect)
-  const supabase = await createClient();
   const headersList = await headers();
   const tenantSlug = headersList.get("x-tenant-slug");
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    const tenantParam = tenantSlug ? `&tenant=${tenantSlug}` : "";
-    redirect(`/${locale}/auth/login?next=/${locale}/perfil${tenantParam}`);
-  }
-
   const tenant = tenantSlug ? await getTenant(tenantSlug) : null;
 
-  // Datos del usuario
-  const displayName =
-    user.user_metadata?.full_name ??
-    user.user_metadata?.name ??
-    user.email?.split("@")[0] ??
-    "Usuario";
-  const avatarUrl: string | null =
-    user.user_metadata?.avatar_url ?? user.user_metadata?.picture ?? null;
-  const email = user.email ?? "";
-  const provider = user.app_metadata?.provider ?? "email";
+  let displayName = "Usuario";
+  let email = "";
+  let avatarUrl: string | null = null;
+  let provider = "dev";
+  let devProfile: DevProfile | null = null;
   const availableLocales = tenant?.active_locales ?? [locale];
+
+  if (IS_DEV) {
+    devProfile = readDevSession();
+    if (!devProfile) {
+      const tenantParam = tenantSlug ? `&tenant=${tenantSlug}` : "";
+      redirect(`/${locale}/auth/login?next=/${locale}/perfil${tenantParam}`);
+    }
+    displayName = devProfile.full_name;
+    email = devProfile.email;
+    provider = "dev";
+  } else {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      const tenantParam = tenantSlug ? `&tenant=${tenantSlug}` : "";
+      redirect(`/${locale}/auth/login?next=/${locale}/perfil${tenantParam}`);
+    }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const meta = user.user_metadata as any;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const appMeta = user.app_metadata as any;
+    displayName = meta?.full_name ?? meta?.name ?? user.email?.split("@")[0] ?? "Usuario";
+    avatarUrl = meta?.avatar_url ?? meta?.picture ?? null;
+    email = user.email ?? "";
+    provider = appMeta?.provider ?? "email";
+  }
+
+  const appointments = tenant ? await getMyAppointments(tenant.id) : [];
+  const notifications = tenant ? await getMyNotifications(tenant.id) : [];
 
   return (
     <div className="mx-auto max-w-lg space-y-6 pb-10">
       {/* Encabezado */}
       <div>
-        <p
-          className="text-xs font-bold uppercase tracking-widest"
-          style={{ color: "var(--brand-primary)" }}
-        >
+        <p className="text-xs font-bold uppercase tracking-widest" style={{ color: "var(--brand-primary)" }}>
           Mi cuenta
         </p>
-        <h1
-          className="mt-1 text-2xl font-bold"
-          style={{ fontFamily: "var(--font-heading)", color: "var(--brand-text)" }}
-        >
+        <h1 className="mt-1 text-2xl font-bold" style={{ fontFamily: "var(--font-heading)", color: "var(--brand-text)" }}>
           Perfil
         </h1>
       </div>
@@ -77,56 +95,44 @@ export default async function PerfilPage({ params }: PageProps) {
         aria-label="Información del usuario"
         className="flex items-center gap-4 rounded-2xl border border-[var(--brand-border)] bg-[var(--brand-surface)] p-5"
       >
-        {/* Avatar */}
         <div
           className="relative flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-full"
-          style={{
-            backgroundColor: "color-mix(in srgb, var(--brand-primary) 20%, transparent)",
-          }}
+          style={{ backgroundColor: "color-mix(in srgb, var(--brand-primary) 20%, transparent)" }}
         >
           {avatarUrl ? (
-            <Image
-              src={avatarUrl}
-              alt={displayName}
-              fill
-              className="object-cover"
-              sizes="64px"
-              referrerPolicy="no-referrer"
-            />
+            <Image src={avatarUrl} alt={displayName} fill className="object-cover" sizes="64px" referrerPolicy="no-referrer" />
           ) : (
-            <User
-              size={28}
-              style={{ color: "var(--brand-primary)" }}
-              strokeWidth={1.5}
-            />
+            <User size={28} style={{ color: "var(--brand-primary)" }} strokeWidth={1.5} />
           )}
         </div>
-
-        {/* Info */}
         <div className="min-w-0 flex-1">
-          <p
-            className="truncate text-base font-semibold"
-            style={{ color: "var(--brand-text)" }}
-          >
+          <p className="truncate text-base font-semibold" style={{ color: "var(--brand-text)" }}>
             {displayName}
           </p>
-          <p
-            className="truncate text-sm"
-            style={{ color: "var(--brand-text)", opacity: 0.55 }}
-          >
+          <p className="truncate text-sm" style={{ color: "var(--brand-text)", opacity: 0.55 }}>
             {email}
           </p>
           <span
             className="mt-1 inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium capitalize"
-            style={{
-              backgroundColor: "color-mix(in srgb, var(--brand-primary) 15%, transparent)",
-              color: "var(--brand-primary)",
-            }}
+            style={{ backgroundColor: "color-mix(in srgb, var(--brand-primary) 15%, transparent)", color: "var(--brand-primary)" }}
           >
-            {provider}
+            {devProfile?.role ?? provider}
           </span>
         </div>
       </section>
+
+      {/* ── Sección de referido (solo clientes) ── */}
+      {(devProfile?.role === "cliente" || (!IS_DEV)) && (
+        <ReferralSection
+          referralCode={devProfile?.referral_code ?? null}
+          points={devProfile?.points ?? 0}
+        />
+      )}
+
+      {/* ── Sección de actividad (solo empleadas) ── */}
+      {devProfile?.role === "trabajadora" && (
+        <EmpleadaStats />
+      )}
 
       {/* Preferencias */}
       <section aria-labelledby="prefs-heading" className="space-y-3">
@@ -139,45 +145,24 @@ export default async function PerfilPage({ params }: PageProps) {
           Preferencias
         </h2>
 
-        {/* Tema */}
         <div className="flex items-center justify-between rounded-2xl border border-[var(--brand-border)] bg-[var(--brand-surface)] p-4">
           <div>
-            <p className="text-sm font-medium" style={{ color: "var(--brand-text)" }}>
-              Tema
-            </p>
-            <p
-              className="text-xs"
-              style={{ color: "var(--brand-text)", opacity: 0.5 }}
-            >
-              Apariencia de la aplicación
-            </p>
+            <p className="text-sm font-medium" style={{ color: "var(--brand-text)" }}>Tema</p>
+            <p className="text-xs" style={{ color: "var(--brand-text)", opacity: 0.5 }}>Apariencia de la aplicación</p>
           </div>
           <ThemeToggle />
         </div>
 
-        {/* Idioma */}
         {availableLocales.length > 1 && (
           <div className="flex items-center justify-between gap-4 rounded-2xl border border-[var(--brand-border)] bg-[var(--brand-surface)] p-4">
             <div className="min-w-0">
-              <p className="text-sm font-medium" style={{ color: "var(--brand-text)" }}>
-                Idioma
-              </p>
-              <p
-                className="text-xs"
-                style={{ color: "var(--brand-text)", opacity: 0.5 }}
-              >
-                Idioma de la interfaz
-              </p>
+              <p className="text-sm font-medium" style={{ color: "var(--brand-text)" }}>Idioma</p>
+              <p className="text-xs" style={{ color: "var(--brand-text)", opacity: 0.5 }}>Idioma de la interfaz</p>
             </div>
-            <LocaleSelector
-              currentLocale={locale}
-              availableLocales={availableLocales}
-              className="w-36 shrink-0"
-            />
+            <LocaleSelector currentLocale={locale} availableLocales={availableLocales} className="w-36 shrink-0" />
           </div>
         )}
 
-        {/* Notificaciones */}
         <NotificationsRow />
       </section>
 
@@ -192,32 +177,19 @@ export default async function PerfilPage({ params }: PageProps) {
             <Calendar size={13} />
             Próximas citas
           </h2>
-          <a
-            href={`/${locale}/agendar`}
-            className="text-[10px] font-bold uppercase tracking-wider underline-offset-4 hover:underline"
-            style={{ color: "var(--brand-primary)" }}
-          >
+          <a href={`/${locale}/agendar`} className="text-[10px] font-bold uppercase tracking-wider underline-offset-4 hover:underline" style={{ color: "var(--brand-primary)" }}>
             Agendar nueva
           </a>
         </div>
-
         {tenant && (
-          <UpcomingAppointments
-            appointments={await getMyAppointments(tenant.id)}
-            tenant={tenant}
-            locale={locale}
-          />
+          <UpcomingAppointments appointments={appointments} tenant={tenant} locale={locale} />
         )}
       </section>
 
       {/* Notificaciones */}
       <section id="notificaciones" aria-labelledby="notifs-heading" className="scroll-mt-20 space-y-4">
         {tenant && (
-          <NotificationCenter
-            notifications={await getMyNotifications(tenant.id)}
-            tenant={tenant}
-            locale={locale}
-          />
+          <NotificationCenter notifications={notifications} tenant={tenant} locale={locale} />
         )}
       </section>
 
@@ -231,18 +203,12 @@ export default async function PerfilPage({ params }: PageProps) {
           <Shield size={13} />
           Seguridad
         </h2>
-
         <div className="rounded-2xl border border-[var(--brand-border)] bg-[var(--brand-surface)] p-4">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium" style={{ color: "var(--brand-text)" }}>
-                Sesión activa
-              </p>
-              <p
-                className="text-xs"
-                style={{ color: "var(--brand-text)", opacity: 0.5 }}
-              >
-                Conectado vía {provider}
+              <p className="text-sm font-medium" style={{ color: "var(--brand-text)" }}>Sesión activa</p>
+              <p className="text-xs" style={{ color: "var(--brand-text)", opacity: 0.5 }}>
+                {IS_DEV ? `Usuario: ${email}` : `Conectado vía ${provider}`}
               </p>
             </div>
             <SignOutButton locale={locale} tenantSlug={tenant?.slug ?? undefined} />
