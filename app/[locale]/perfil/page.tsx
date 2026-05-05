@@ -22,6 +22,7 @@ interface PageProps {
 }
 
 interface DevProfile {
+  id: string;
   role: string;
   referral_code?: string | null;
   full_name?: string;
@@ -64,6 +65,7 @@ export default async function PerfilPage({ params }: PageProps) {
   let userRole = "cliente";
   let referralCode: string | null = null;
   let referralBonus = tenant?.referral_bonus_pts ?? 50;
+  let devUserId: string | undefined;
 
   if (isDevMode) {
     const devProfile = await getDevProfile();
@@ -75,6 +77,7 @@ export default async function PerfilPage({ params }: PageProps) {
     email = devProfile.email ?? "";
     userRole = devProfile.role ?? "cliente";
     referralCode = devProfile.referral_code ?? null;
+    devUserId = devProfile.id;
   } else {
     // Verificar sesión Supabase
     const supabase = await createClient();
@@ -269,7 +272,7 @@ export default async function PerfilPage({ params }: PageProps) {
 
         {tenant && (
           <UpcomingAppointments
-            appointments={await getMyAppointments(tenant.id)}
+            appointments={await getMyAppointments(tenant.id, isDevMode ? devUserId : undefined)}
             tenant={tenant}
             locale={locale}
           />

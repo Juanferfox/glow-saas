@@ -14,7 +14,7 @@ function getDevProfile(cookieHeader: string | null): { role: string } | null {
   try {
     const match = cookieHeader.match(/dev-session=([^;]+)/);
     if (!match || !match[1]) return null;
-    return JSON.parse(Buffer.from(match[1], "base64").toString("utf-8"));
+    return JSON.parse(decodeURIComponent(match[1]));
   } catch {
     return null;
   }

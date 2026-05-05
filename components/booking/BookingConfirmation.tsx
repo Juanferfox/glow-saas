@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Calendar, Clock, User, MessageSquare, CheckCircle2, Loader2 } from "lucide-react";
 import { formatCurrency } from "@/lib/utils";
 import { getTenantText } from "@/lib/theme";
@@ -41,9 +41,11 @@ export function BookingConfirmation({
   const [notes, setNotes] = useState("");
   const [referralCode, setReferralCode] = useState("");
   const [referralValid, setReferralValid] = useState<boolean | null>(null);
+  const [referralName, setReferralName] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [confirmed, setConfirmed] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const debounceRef = useRef<NodeJS.Timeout | null>(null);
 
   const serviceName = getTenantText(service.name, locale, tenant.default_locale);
 
@@ -51,10 +53,22 @@ export function BookingConfirmation({
     setReferralCode(code);
     if (!code) {
       setReferralValid(null);
+      setReferralName(null);
       return;
     }
-    const validCodes = ["FMCLI001"];
-    setReferralValid(validCodes.includes(code.toUpperCase()));
+
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(async () => {
+      try {
+        const res = await fetch(`/api/referral/validate?tenant=${tenant.slug}&code=${encodeURIComponent(code)}`);
+        const data = await res.json();
+        setReferralValid(data.valid);
+        setReferralName(data.referrerName ?? null);
+      } catch {
+        setReferralValid(false);
+        setReferralName(null);
+      }
+    }, 400);
   }
 
   async function handleConfirm() {
@@ -207,7 +221,7 @@ export function BookingConfirmation({
           />
           {referralValid && (
             <p className="text-xs text-green-600">
-              Código válido. El cliente que te refirió recibirá {tenant.referral_bonus_pts} puntos.
+              Código válido{referralName ? ` — ${referralName}` : ""}. {referralName ? "Recibirá" : "El cliente que te refirió recibirá"} {tenant.referral_bonus_pts} puntos.
             </p>
           )}
           {referralValid === false && (

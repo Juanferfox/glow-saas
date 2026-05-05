@@ -1,9 +1,11 @@
 "use client";
 
+import { useState } from "react";
 import Image from "next/image";
-import { ShoppingCart, Tag, AlertCircle } from "lucide-react";
+import { ShoppingCart, Tag, AlertCircle, Check } from "lucide-react";
 import { formatCurrency, cn } from "@/lib/utils";
 import { getTenantText } from "@/lib/theme";
+import { useCart } from "@/contexts/CartContext";
 import type { ProductRow } from "@/lib/data/products";
 import type { Tenant } from "@/lib/supabase/types";
 
@@ -17,6 +19,17 @@ export function ProductCard({ product, tenant, locale }: ProductCardProps) {
   const name = getTenantText(product.name, locale, tenant.default_locale);
   const outOfStock = product.stock <= 0;
   const lowStock = !outOfStock && product.stock <= product.stock_alert_threshold;
+  const { addItem, items } = useCart();
+  const [added, setAdded] = useState(false);
+
+  const inCart = items.some((i) => i.product.id === product.id);
+
+  function handleAdd() {
+    if (outOfStock) return;
+    addItem(product, 1);
+    setAdded(true);
+    setTimeout(() => setAdded(false), 1200);
+  }
 
   return (
     <div
@@ -83,10 +96,16 @@ export function ProductCard({ product, tenant, locale }: ProductCardProps) {
             </span>
             <button
               id={`add-to-cart-${product.id}`}
+              onClick={handleAdd}
               disabled={outOfStock}
-              className="rounded-full bg-[var(--brand-primary)] p-2 text-white shadow-md transition-all hover:scale-110 active:scale-95 disabled:opacity-0"
+              className={cn(
+                "rounded-full p-2 text-white shadow-md transition-all hover:scale-110 active:scale-95 disabled:opacity-0",
+                added || inCart
+                  ? "bg-green-500"
+                  : "bg-[var(--brand-primary)]"
+              )}
             >
-              <ShoppingCart size={16} />
+              {added || inCart ? <Check size={16} /> : <ShoppingCart size={16} />}
             </button>
           </div>
         </div>

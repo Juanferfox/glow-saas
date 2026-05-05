@@ -295,6 +295,67 @@ const DEV_USERS: ProfileWithEmail[] = [
     specialist_name: null,
   },
 
+  // ── FM Glow Studio ───────────────────────────────────────────────────────
+  {
+    id: "dev-admin-fmglow",
+    tenant_id: "dev-fm-glow-studio",
+    full_name: "Admin FM Glow",
+    avatar_url: null,
+    role: "admin",
+    email: "admin@fmglow.test",
+    referral_code: null,
+    referred_by: null,
+    loyalty_points: 0,
+    preferred_theme: "system",
+    preferred_locale: "es",
+    notifications_promo: true,
+    notifications_tips: true,
+    push_subscription: null,
+    calendar_sync_token: null,
+    created_at: new Date(Date.now() - 60 * 86_400_000).toISOString(),
+    specialist_id: null,
+    specialist_name: null,
+  },
+  {
+    id: "dev-cliente-fmglow",
+    tenant_id: "dev-fm-glow-studio",
+    full_name: "Cliente FM Glow",
+    avatar_url: null,
+    role: "cliente",
+    email: "cliente@fmglow.test",
+    referral_code: "FMCLI001",
+    referred_by: null,
+    loyalty_points: 250,
+    preferred_theme: "system",
+    preferred_locale: "es",
+    notifications_promo: true,
+    notifications_tips: true,
+    push_subscription: null,
+    calendar_sync_token: null,
+    created_at: new Date(Date.now() - 30 * 86_400_000).toISOString(),
+    specialist_id: null,
+    specialist_name: null,
+  },
+  {
+    id: "dev-empleada-fmglow",
+    tenant_id: "dev-fm-glow-studio",
+    full_name: "Ana García",
+    avatar_url: null,
+    role: "trabajadora",
+    email: "empleada@fmglow.test",
+    referral_code: null,
+    referred_by: null,
+    loyalty_points: 0,
+    preferred_theme: "system",
+    preferred_locale: "es",
+    notifications_promo: false,
+    notifications_tips: true,
+    push_subscription: null,
+    calendar_sync_token: null,
+    created_at: new Date(Date.now() - 45 * 86_400_000).toISOString(),
+    specialist_id: "fmg-sp-1",
+    specialist_name: "Ana García",
+  },
   {
     id: "dev-user-2",
     tenant_id: "dev-spa-luna",
@@ -318,6 +379,72 @@ const DEV_USERS: ProfileWithEmail[] = [
 ];
 
 // ─── Funciones ───────────────────────────────────────────────────────────────
+
+/**
+ * Busca un usuario por su código de referido (solo clientes).
+ */
+export async function findUserByReferralCode(
+  tenantId: string,
+  referralCode: string
+): Promise<ProfileWithEmail | null> {
+  const isDevMode =
+    !process.env.NEXT_PUBLIC_SUPABASE_URL ||
+    process.env.NEXT_PUBLIC_SUPABASE_URL.includes("xxxx");
+
+  if (isDevMode) {
+    return DEV_USERS.find(
+      (u) =>
+        u.referral_code?.toUpperCase() === referralCode.toUpperCase() &&
+        u.role === "cliente"
+    ) ?? null;
+  }
+
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("profiles")
+    .select("*")
+    .eq("tenant_id", tenantId)
+    .eq("referral_code", referralCode.toUpperCase())
+    .eq("role", "cliente")
+    .single();
+
+  return (data as ProfileWithEmail) ?? null;
+}
+
+/**
+ * Suma puntos de fidelidad a un usuario del tenant.
+ */
+export async function addLoyaltyPoints(
+  tenantId: string,
+  userId: string,
+  points: number
+): Promise<void> {
+  const isDevMode =
+    !process.env.NEXT_PUBLIC_SUPABASE_URL ||
+    process.env.NEXT_PUBLIC_SUPABASE_URL.includes("xxxx");
+
+  if (isDevMode) {
+    const user = DEV_USERS.find((u) => u.id === userId);
+    if (user) user.loyalty_points += points;
+    return;
+  }
+
+  const supabase = await createClient();
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("loyalty_points")
+    .eq("id", userId)
+    .eq("tenant_id", tenantId)
+    .single();
+
+  if (profile) {
+    await supabase
+      .from("profiles")
+      .update({ loyalty_points: profile.loyalty_points + points })
+      .eq("id", userId)
+      .eq("tenant_id", tenantId);
+  }
+}
 
 /**
  * Lista todos los usuarios del tenant, con email y specialist vinculado.

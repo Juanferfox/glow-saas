@@ -26,7 +26,7 @@ function getDevUser(cookieHeader: string | null): { id: string } | null {
   try {
     const match = cookieHeader.match(/dev-session=([^;]+)/);
     if (!match || !match[1]) return null;
-    const profile = JSON.parse(Buffer.from(match[1], "base64").toString("utf-8"));
+    const profile = JSON.parse(decodeURIComponent(match[1]));
     return { id: profile.id };
   } catch {
     return null;
@@ -63,7 +63,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Body inválido" }, { status: 400 });
   }
 
-  const { tenantSlug, serviceId, specialistId, date, time, notes } = body;
+  const { tenantSlug, serviceId, specialistId, date, time, notes, referralCode } = body;
   if (!tenantSlug || !serviceId || !specialistId || !date || !time) {
     return NextResponse.json({ error: "Faltan campos requeridos" }, { status: 400 });
   }
@@ -71,6 +71,27 @@ export async function POST(request: NextRequest) {
   const tenant = await getTenant(tenantSlug);
   if (!tenant) {
     return NextResponse.json({ error: "Tenant no encontrado" }, { status: 404 });
+  }
+
+  // Validar referral code si se proporcionó
+  let referralValid = false;
+  let referredBy: string | null = null;
+  if (referralCode) {
+    const { findUserByReferralCode } = await import("@/lib/data/users");
+    const referrer = await findUserByReferralCode(tenant.id, referralCode);
+    if (referrer && referrer.id !== userId) {
+      referralValid = true;
+      referredBy = referrer.id;
+      // Sumar puntos al dueño del código
+      if (dev) {
+        const { addLoyaltyPoints } = await import("@/lib/data/users");
+        await addLoyaltyPoints(tenant.id, referrer.id, tenant.referral_bonus_pts);
+      } else {
+        // En producción se haría via Supabase
+        const { addLoyaltyPoints } = await import("@/lib/data/users");
+        await addLoyaltyPoints(tenant.id, referrer.id, tenant.referral_bonus_pts);
+      }
+    }
   }
 
   const services = await getServices(tenant.id);
@@ -97,6 +118,7 @@ export async function POST(request: NextRequest) {
       cancelled_at:   null,
       cancel_reason:  null,
       created_at:     new Date().toISOString(),
+      ...(referralValid && referredBy ? { referred_by: referredBy } : {}),
     };
     return NextResponse.json({ appointment: mockAppointment }, { status: 201 });
   }

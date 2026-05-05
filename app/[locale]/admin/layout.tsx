@@ -7,7 +7,7 @@ import { getTenant } from "@/lib/tenant";
 import {
   CalendarDays, ShoppingBag, Star, Settings,
   Users, CalendarRange, LayoutDashboard,
-  Bell, TrendingUp, Scissors,
+  Bell, TrendingUp, Scissors, Clock,
 } from "lucide-react";
 
 interface AdminLayoutProps {
@@ -78,6 +78,7 @@ export default async function AdminLayout({ children, params }: AdminLayoutProps
     { href: `/${locale}/admin/agenda`,        label: "Agenda hoy",     icon: LayoutDashboard },
     { href: `/${locale}/admin/calendario`,    label: "Calendario",     icon: CalendarRange },
     { href: `/${locale}/admin/servicios`,     label: "Servicios",      icon: Scissors,      workerHidden: true },
+    { href: `/${locale}/admin/horarios`,      label: "Horarios",       icon: Clock,         workerHidden: true, adminOnly: true },
     { href: `/${locale}/admin/notificaciones`,label: "Notificaciones", icon: Bell,         workerHidden: true },
     { href: `/${locale}/admin/inventario`,    label: "Inventario",     icon: ShoppingBag,  workerHidden: true },
     { href: `/${locale}/admin/fidelizacion`,  label: "Fidelización",   icon: Star,         workerHidden: true },

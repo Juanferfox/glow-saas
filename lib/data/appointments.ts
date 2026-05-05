@@ -341,11 +341,15 @@ function isDevMode() {
  * Obtiene las citas próximas del usuario autenticado para un tenant.
  */
 export async function getMyAppointments(
-  tenantId: string
+  tenantId: string,
+  userId?: string
 ): Promise<AppointmentWithDetails[]> {
   if (isDevMode()) {
     const all = DEV_APPOINTMENTS[tenantId] ?? [];
-    return all.filter((a) => new Date(a.scheduled_at) >= new Date());
+    const filtered = userId
+      ? all.filter((a) => a.client_id === userId)
+      : all;
+    return filtered.filter((a) => new Date(a.scheduled_at) >= new Date());
   }
 
   try {
@@ -372,18 +376,24 @@ export async function getMyAppointments(
 /**
  * Obtiene TODAS las citas del usuario (próximas + historial).
  */
-export async function getAllMyAppointments(tenantId: string): Promise<{
+export async function getAllMyAppointments(
+  tenantId: string,
+  userId?: string
+): Promise<{
   upcoming: AppointmentWithDetails[];
   past: AppointmentWithDetails[];
 }> {
   if (isDevMode()) {
     const all = DEV_APPOINTMENTS[tenantId] ?? [];
+    const filtered = userId
+      ? all.filter((a) => a.client_id === userId)
+      : all;
     const cutoff = new Date();
     return {
-      upcoming: all.filter(
+      upcoming: filtered.filter(
         (a) => new Date(a.scheduled_at) >= cutoff && a.status !== "cancelled"
       ),
-      past: all.filter(
+      past: filtered.filter(
         (a) => new Date(a.scheduled_at) < cutoff || a.status === "cancelled"
       ),
     };

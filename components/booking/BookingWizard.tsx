@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { ServiceSelector } from "@/components/booking/ServiceSelector";
 import { CalendarPicker } from "@/components/booking/CalendarPicker";
 import { TimeSlotGrid } from "@/components/booking/TimeSlotGrid";
@@ -32,9 +32,29 @@ export function BookingWizard({ tenant, locale, services }: BookingWizardProps) 
   const [selectedDate,    setSelectedDate]    = useState<string | null>(null);
   const [selectedSlot,    setSelectedSlot]    = useState<AvailableSlot | null>(null);
 
+  // Disponibilidad de fechas por mes
+  const [availableDates, setAvailableDates] = useState<string[]>([]);
+  const [loadingDates, setLoadingDates] = useState(false);
+
+  const loadAvailableDates = useCallback(async (serviceId: string, year: number, month: number) => {
+    const monthStr = `${year}-${String(month + 1).padStart(2, "0")}`;
+    setLoadingDates(true);
+    try {
+      const res = await fetch(`/api/availability/dates?tenant=${tenant.slug}&service=${serviceId}&month=${monthStr}`);
+      const data = await res.json();
+      setAvailableDates(data.dates ?? []);
+    } catch {
+      setAvailableDates([]);
+    } finally {
+      setLoadingDates(false);
+    }
+  }, [tenant.slug]);
+
   // Navegación
   function handleServiceSelect(service: ServiceRow) {
     setSelectedService(service);
+    const now = new Date();
+    loadAvailableDates(service.id, now.getFullYear(), now.getMonth());
     setStep("date");
   }
 
@@ -145,6 +165,11 @@ export function BookingWizard({ tenant, locale, services }: BookingWizardProps) 
               selectedDate={selectedDate}
               onSelect={handleDateSelect}
               timezone={tenant.timezone}
+              availableDates={availableDates}
+              loadingDates={loadingDates}
+              onViewChange={(year, month) => {
+                if (selectedService) loadAvailableDates(selectedService.id, year, month);
+              }}
             />
             <button
               onClick={() => setStep("service")}

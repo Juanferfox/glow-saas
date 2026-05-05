@@ -1,7 +1,9 @@
 import { headers } from "next/headers";
+import Link from "next/link";
 import { getTenant } from "@/lib/tenant";
 import { getProducts } from "@/lib/data/products";
 import { ProductGrid } from "@/components/shop/ProductGrid";
+import { CartButton } from "@/components/shop/CartButton";
 import { ShoppingBag } from "lucide-react";
 
 interface PageProps {
@@ -29,9 +31,12 @@ export default async function TiendaPage({ params }: PageProps) {
     <div className="container mx-auto px-4 py-8 space-y-8">
       {/* Header */}
       <div className="flex flex-col gap-2">
-        <div className="flex items-center gap-2 text-[var(--brand-primary)]">
-          <ShoppingBag size={20} />
-          <span className="text-xs font-bold uppercase tracking-widest">Tienda</span>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2 text-[var(--brand-primary)]">
+            <ShoppingBag size={20} />
+            <span className="text-xs font-bold uppercase tracking-widest">Tienda</span>
+          </div>
+          <CartButton locale={locale} />
         </div>
         <h1
           className="text-3xl font-bold"

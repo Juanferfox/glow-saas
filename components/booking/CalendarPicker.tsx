@@ -8,12 +8,15 @@ interface CalendarPickerProps {
   selectedDate: string | null; // "YYYY-MM-DD"
   onSelect: (date: string) => void;
   timezone: string;
+  availableDates?: string[];
+  loadingDates?: boolean;
+  onViewChange?: (year: number, month: number) => void;
 }
 
 const DAYS = ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"];
 const MONTHS = [
   "Enero","Febrero","Marzo","Abril","Mayo","Junio",
-  "Juliio","Agosto","Septiembre","Octubre","Noviembre","Diciembre",
+  "Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre",
 ];
 
 function toYMD(d: Date) {
@@ -24,7 +27,7 @@ function toYMD(d: Date) {
  * Paso 2 del flujo de agendamiento.
  * Calendario mensual mobile-first. No muestra días pasados ni más de 60 días adelante.
  */
-export function CalendarPicker({ selectedDate, onSelect, timezone }: CalendarPickerProps) {
+export function CalendarPicker({ selectedDate, onSelect, timezone, availableDates, loadingDates, onViewChange }: CalendarPickerProps) {
   const today = new Date();
   const todayYMD = toYMD(today);
 
@@ -43,14 +46,22 @@ export function CalendarPicker({ selectedDate, onSelect, timezone }: CalendarPic
   const startPad  = firstDay.getDay(); // cuántos días antes del 1 poner vacíos
   const daysInMonth = lastDay.getDate();
 
+  const availableSet = new Set(availableDates ?? []);
+
   function prevMonth() {
     if (viewMonth === 0) { setViewYear(y => y - 1); setViewMonth(11); }
     else setViewMonth(m => m - 1);
+    const newMonth = viewMonth === 0 ? 11 : viewMonth - 1;
+    const newYear = viewMonth === 0 ? viewYear - 1 : viewYear;
+    onViewChange?.(newYear, newMonth);
   }
 
   function nextMonth() {
     if (viewMonth === 11) { setViewYear(y => y + 1); setViewMonth(0); }
     else setViewMonth(m => m + 1);
+    const newMonth = viewMonth === 11 ? 0 : viewMonth + 1;
+    const newYear = viewMonth === 11 ? viewYear + 1 : viewYear;
+    onViewChange?.(newYear, newMonth);
   }
 
   // Deshabilitar navegación a meses pasados
@@ -144,7 +155,7 @@ export function CalendarPicker({ selectedDate, onSelect, timezone }: CalendarPic
               aria-label={ymd}
               aria-pressed={isSelected}
               className={cn(
-                "mx-auto flex h-9 w-9 items-center justify-center rounded-full text-sm",
+                "relative mx-auto flex h-9 w-9 items-center justify-center rounded-full text-sm",
                 "transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand-primary)]",
                 disabled && "opacity-20 cursor-not-allowed",
                 !disabled && !isSelected && "hover:bg-[var(--brand-border)]",
@@ -156,6 +167,9 @@ export function CalendarPicker({ selectedDate, onSelect, timezone }: CalendarPic
               }}
             >
               {day}
+              {!disabled && availableSet.has(ymd) && !isSelected && (
+                <span className="absolute bottom-1 left-1/2 -translate-x-1/2 h-1 w-1 rounded-full bg-green-400" />
+              )}
             </button>
           );
         })}

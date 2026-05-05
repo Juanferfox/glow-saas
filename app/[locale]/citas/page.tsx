@@ -1,4 +1,5 @@
 import { headers } from "next/headers";
+import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { CalendarDays, CheckCircle2, Clock, XCircle, Circle } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
@@ -154,12 +155,23 @@ function AppointmentCard({
 export default async function CitasPage({ params }: PageProps) {
   const { locale } = await params;
 
-  // 1. Autenticación (en dev sin Supabase se permite sin sesión)
+  // 1. Autenticación
   const isDevMode =
     !process.env.NEXT_PUBLIC_SUPABASE_URL ||
     process.env.NEXT_PUBLIC_SUPABASE_URL.includes("xxxx");
 
-  if (!isDevMode) {
+  let userId: string | undefined;
+
+  if (isDevMode) {
+    try {
+      const cookieStore = await cookies();
+      const devCookie = cookieStore.get("dev-session")?.value;
+      if (devCookie) {
+        const profile = JSON.parse(decodeURIComponent(devCookie));
+        userId = profile.id;
+      }
+    } catch {}
+  } else {
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
@@ -173,8 +185,8 @@ export default async function CitasPage({ params }: PageProps) {
   const tenant      = tenantSlug ? await getTenant(tenantSlug) : null;
   if (!tenant) return null;
 
-  // 3. Citas
-  const { upcoming, past } = await getAllMyAppointments(tenant.id);
+  // 3. Citas (filtradas por userId en dev mode)
+  const { upcoming, past } = await getAllMyAppointments(tenant.id, userId);
 
   const canCancel = (a: AppointmentWithDetails) =>
     a.status === "confirmed" || a.status === "pending";
