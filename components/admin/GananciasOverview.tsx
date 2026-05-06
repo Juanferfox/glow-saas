@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { formatCurrency, cn } from "@/lib/utils";
-import { DollarSign, ShoppingBag, CalendarDays, Package, TrendingUp } from "lucide-react";
+import { DollarSign, ShoppingBag, CalendarDays, TrendingUp, BarChart3 } from "lucide-react";
 
 interface AnalyticsData {
   services_revenue: number;
@@ -39,6 +39,8 @@ export function GananciasOverview() {
       </div>
     );
   }
+
+  const maxBar = Math.max(data.services_revenue, data.store_revenue, 1);
 
   return (
     <div className="space-y-4">
@@ -84,6 +86,54 @@ export function GananciasOverview() {
           highlight
         />
       </div>
+
+      {/* Gráfica de barras */}
+      {data.total > 0 && (
+        <div
+          className="rounded-2xl border border-[var(--brand-border)] bg-[var(--brand-surface)] p-5"
+        >
+          <div className="flex items-center gap-2 mb-4">
+            <BarChart3 size={14} style={{ color: "var(--brand-primary)" }} />
+            <span className="text-xs font-bold uppercase tracking-widest opacity-40" style={{ color: "var(--brand-text)" }}>
+              Comparativa de ingresos
+            </span>
+          </div>
+          <div className="flex items-end gap-4 h-32">
+            <div className="flex flex-col items-center gap-1 flex-1 h-full justify-end">
+              <span className="text-xs font-bold" style={{ color: "var(--brand-text)" }}>
+                {formatCurrency(data.services_revenue, "es-CO", "COP")}
+              </span>
+              <div
+                className="w-full max-w-[80px] rounded-t-lg transition-all duration-500"
+                style={{
+                  height: `${(data.services_revenue / maxBar) * 100}%`,
+                  backgroundColor: "#3b82f6",
+                  minHeight: 4,
+                }}
+              />
+              <span className="text-[10px] font-semibold opacity-50" style={{ color: "var(--brand-text)" }}>
+                Servicios
+              </span>
+            </div>
+            <div className="flex flex-col items-center gap-1 flex-1 h-full justify-end">
+              <span className="text-xs font-bold" style={{ color: "var(--brand-text)" }}>
+                {formatCurrency(data.store_revenue, "es-CO", "COP")}
+              </span>
+              <div
+                className="w-full max-w-[80px] rounded-t-lg transition-all duration-500"
+                style={{
+                  height: `${(data.store_revenue / maxBar) * 100}%`,
+                  backgroundColor: "#10b981",
+                  minHeight: 4,
+                }}
+              />
+              <span className="text-[10px] font-semibold opacity-50" style={{ color: "var(--brand-text)" }}>
+                Tienda
+              </span>
+            </div>
+          </div>
+        </div>
+      )}
 
       {data.recent_transactions && data.recent_transactions.length > 0 && (
         <div>

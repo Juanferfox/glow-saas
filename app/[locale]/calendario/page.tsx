@@ -1,13 +1,16 @@
 import { headers } from "next/headers";
+import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
-import { CalendarDays, RefreshCw } from "lucide-react";
+import { CalendarDays, RefreshCw, Clock, User } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { getTenant } from "@/lib/tenant";
 import { getCalendarEvents, getTreatmentPlans, getTreatmentSessions, getOrCreateCalendarToken } from "@/lib/data/calendar";
 import { WeekCalendar } from "@/components/calendar/WeekCalendar";
 import { SyncCalendarCard } from "@/components/calendar/SyncCalendarCard";
 import { TreatmentPlanCard } from "@/components/calendar/TreatmentPlanCard";
+import { WorkerActivity } from "@/components/profile/WorkerActivity";
+import { getMyAppointments } from "@/lib/data/appointments";
 
 interface PageProps {
   params: Promise<{ locale: string }>;
@@ -29,10 +32,21 @@ export default async function CalendarioPage({ params }: PageProps) {
     process.env.NEXT_PUBLIC_SUPABASE_URL.includes("xxxx");
 
   let userId   = "dev-user";
-  // Array-box para evitar que TypeScript estreche el tipo a literal "cliente"
+  let specialistId: string | null = null;
   const userRoleArr: ["cliente" | "trabajadora" | "recepcionista" | "admin"] = ["cliente"];
 
-  if (!isDevMode) {
+  if (isDevMode) {
+    try {
+      const cookieStore = await cookies();
+      const devCookie = cookieStore.get("dev-session")?.value;
+      if (devCookie) {
+        const profile = JSON.parse(Buffer.from(devCookie, "base64").toString("utf-8"));
+        userId = profile.id || userId;
+        userRoleArr[0] = profile.role || "cliente";
+        specialistId = profile.specialist_id ?? null;
+      }
+    } catch {}
+  } else {
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) redirect(`/${locale}/auth/login?next=/${locale}/calendario`);
@@ -66,6 +80,15 @@ export default async function CalendarioPage({ params }: PageProps) {
     userRole === "cliente" ? getTreatmentPlans(tenant.id, userId) : Promise.resolve([]),
     getOrCreateCalendarToken(userId),
   ]);
+
+  // Citas de hoy para la trabajadora
+  const todayAppointments = userRole === "trabajadora"
+    ? (await getMyAppointments(tenant.id, userId)).filter((a) => {
+        const d = new Date(a.scheduled_at);
+        const t = new Date();
+        return d.toDateString() === t.toDateString() && a.status !== "cancelled";
+      })
+    : [];
 
   // Sesiones de cada plan (solo cliente)
   const plansWithSessions = await Promise.all(
@@ -135,6 +158,54 @@ export default async function CalendarioPage({ params }: PageProps) {
             ))}
           </div>
         </section>
+      )}
+
+      {/* Actividad de la trabajadora */}
+      {userRole === "trabajadora" && (
+        <div className="grid gap-6 sm:grid-cols-2">
+          <WorkerActivity />
+
+          {/* Citas de hoy */}
+          <section className="rounded-2xl border border-[var(--brand-border)] bg-[var(--brand-surface)] p-5 space-y-4">
+            <div className="flex items-center gap-2">
+              <Clock size={16} className="opacity-50" style={{ color: "var(--brand-primary)" }} />
+              <h3 className="text-sm font-semibold" style={{ color: "var(--brand-text)" }}>
+                Mis citas de hoy
+              </h3>
+            </div>
+
+            {todayAppointments.length === 0 ? (
+              <p className="text-xs opacity-40 text-center py-4" style={{ color: "var(--brand-text)" }}>
+                No tienes citas agendadas para hoy
+              </p>
+            ) : (
+              <div className="space-y-2">
+                {todayAppointments.map((appt) => (
+                  <div
+                    key={appt.id}
+                    className="flex items-center gap-3 rounded-xl border border-[var(--brand-border)] bg-[var(--brand-bg)] p-3"
+                  >
+                    <span className="text-lg font-black" style={{ color: "var(--brand-primary)" }}>
+                      {new Date(appt.scheduled_at).toLocaleTimeString("es-CO", { hour: "2-digit", minute: "2-digit" })}
+                    </span>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-semibold truncate" style={{ color: "var(--brand-text)" }}>
+                        {typeof appt.service_name === "object"
+                          ? (appt.service_name as Record<string, string>).es ?? "Servicio"
+                          : "Servicio"}
+                      </p>
+                      {appt.notes && (
+                        <p className="text-[10px] opacity-40 truncate" style={{ color: "var(--brand-text)" }}>
+                          {appt.notes}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </section>
+        </div>
       )}
 
       {/* Sincronización iCal */}

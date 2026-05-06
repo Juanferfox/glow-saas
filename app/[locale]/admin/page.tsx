@@ -2,6 +2,7 @@ import { headers } from "next/headers";
 import { getTenant } from "@/lib/tenant";
 import { getSalesHistory } from "@/lib/data/inventory";
 import { getMyAppointments } from "@/lib/data/appointments";
+import { getSpecialists, getSchedules } from "@/lib/data/specialists";
 import { DashboardActions } from "@/components/admin/DashboardActions";
 import { GananciasOverview } from "@/components/admin/GananciasOverview";
 import {
@@ -12,6 +13,7 @@ import {
   ArrowUpRight,
   ArrowDownRight,
   Clock,
+  TrendingUp,
 } from "lucide-react";
 import { cn, formatCurrency } from "@/lib/utils";
 
@@ -35,6 +37,31 @@ export default async function AdminDashboardPage({ params }: PageProps) {
   // 2. Cargar datos para métricas (Mock/Real dependiente de backend)
   const sales = await getSalesHistory(tenant.id);
   const appointments = await getMyAppointments(tenant.id);
+  const specialists = await getSpecialists(tenant.id);
+  const schedules = await getSchedules(tenant.id);
+
+  // Ocupación de especialistas esta semana
+  const now = new Date();
+  const dayOfWeek = now.getDay();
+  const monday = new Date(now);
+  monday.setDate(now.getDate() - (dayOfWeek === 0 ? 6 : dayOfWeek - 1));
+  const weekAppointments = appointments.filter((a) => {
+    const d = new Date(a.scheduled_at);
+    return d >= monday && a.status !== "cancelled";
+  });
+
+  let totalSlotsWeek = 0;
+  for (const sp of specialists) {
+    for (const sched of schedules) {
+      if (sched.specialist_id !== sp.id || !sched.is_working) continue;
+      const [sh, sm] = sched.start_time.split(":").map(Number);
+      const [eh, em] = sched.end_time.split(":").map(Number);
+      totalSlotsWeek += ((eh ?? 18) - (sh ?? 9)) * (60 / 30) + ((em ?? 0) - (sm ?? 0)) / 30;
+    }
+  }
+  const ocupacion = totalSlotsWeek > 0
+    ? Math.round((weekAppointments.length / totalSlotsWeek) * 100)
+    : 0;
 
   // Cálculos rápidos
   const totalRevenue = sales.reduce((sum, s) => sum + s.total, 0);
@@ -71,6 +98,13 @@ export default async function AdminDashboardPage({ params }: PageProps) {
       isUp: false,
       icon: <Package className="text-amber-500" size={20} /> 
     },
+    { 
+      label: "Ocupación Semanal", 
+      value: `${ocupacion}%`, 
+      trend: `${weekAppointments.length} citas`, 
+      isUp: ocupacion > 50,
+      icon: <TrendingUp className="text-violet-500" size={20} /> 
+    },
   ];
 
   return (
@@ -92,7 +126,7 @@ export default async function AdminDashboardPage({ params }: PageProps) {
       <GananciasOverview />
 
       {/* Grid de Stats */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
         {stats.map((stat, i) => (
           <div 
             key={i}
@@ -117,9 +151,6 @@ export default async function AdminDashboardPage({ params }: PageProps) {
           </div>
         ))}
       </div>
-
-      {/* Dashboard de Ganancias */}
-      <GananciasOverview />
 
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
         {/* Próximas Citas */}

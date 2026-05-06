@@ -1,6 +1,6 @@
 "use client";
 
-import { AlertTriangle, ArrowDown, ArrowUp, RefreshCcw } from "lucide-react";
+import { AlertTriangle, ArrowDown, ArrowUp, Pencil, Power, PowerOff, RefreshCcw } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { getTenantText } from "@/lib/theme";
 import type { ProductRow } from "@/lib/data/products";
@@ -12,9 +12,11 @@ interface AdminInventoryTableProps {
   movements: InventoryMovement[];
   tenant: Tenant;
   locale: string;
+  onEdit?: (product: ProductRow) => void;
+  onToggleActive?: (product: ProductRow) => void;
 }
 
-export function AdminInventoryTable({ products, movements, tenant, locale }: AdminInventoryTableProps) {
+export function AdminInventoryTable({ products, movements, tenant, locale, onEdit, onToggleActive }: AdminInventoryTableProps) {
   return (
     <div className="space-y-8">
       {/* Alertas de Stock Bajo */}
@@ -47,13 +49,22 @@ export function AdminInventoryTable({ products, movements, tenant, locale }: Adm
                 <th className="px-6 py-4 text-center">Stock</th>
                 <th className="px-6 py-4 text-center">Alert a</th>
                 <th className="px-6 py-4 text-right">Precio</th>
+                <th className="px-6 py-4 text-center">Estado</th>
+                <th className="px-6 py-4 text-center">Acción</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-[var(--brand-border)]">
               {products.map((p) => (
                 <tr key={p.id} className="transition-colors hover:bg-zinc-500/5">
                   <td className="px-6 py-4 font-bold" style={{ color: "var(--brand-text)" }}>
-                    {getTenantText(p.name, locale, tenant.default_locale)}
+                    <div>
+                      {getTenantText(p.name, locale, tenant.default_locale)}
+                      {p.description && (
+                        <p className="text-[10px] opacity-40 font-normal mt-0.5 line-clamp-1">
+                          {getTenantText(p.description as Record<string, string>, locale, tenant.default_locale)}
+                        </p>
+                      )}
+                    </div>
                   </td>
                   <td className="px-6 py-4">
                     <span className="rounded-full bg-zinc-500/10 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-tighter">
@@ -77,6 +88,41 @@ export function AdminInventoryTable({ products, movements, tenant, locale }: Adm
                   </td>
                   <td className="px-6 py-4 text-right font-black" style={{ color: "var(--brand-primary)" }}>
                     ${p.price.toLocaleString()}
+                  </td>
+                  <td className="px-6 py-4 text-center">
+                    <span
+                      className={cn(
+                        "rounded-full px-2.5 py-0.5 text-[10px] font-semibold",
+                        p.active
+                          ? "bg-green-500/10 text-green-500"
+                          : "bg-red-500/10 text-red-400"
+                      )}
+                    >
+                      {p.active ? "Activo" : "Inactivo"}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4">
+                    <div className="flex items-center justify-center gap-1">
+                      <button
+                        onClick={() => onEdit?.(p)}
+                        className="rounded-lg p-1.5 opacity-40 hover:opacity-100 hover:bg-zinc-500/10 transition-all"
+                        title="Editar producto"
+                      >
+                        <Pencil size={14} />
+                      </button>
+                      <button
+                        onClick={() => onToggleActive?.(p)}
+                        className={cn(
+                          "rounded-lg p-1.5 transition-all",
+                          p.active
+                            ? "opacity-40 hover:opacity-100 hover:bg-red-500/10 text-red-400"
+                            : "opacity-40 hover:opacity-100 hover:bg-green-500/10 text-green-500"
+                        )}
+                        title={p.active ? "Desactivar" : "Activar"}
+                      >
+                        {p.active ? <PowerOff size={14} /> : <Power size={14} />}
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}

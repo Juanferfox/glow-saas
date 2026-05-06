@@ -1,38 +1,82 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { X, Upload, Loader2, Save } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { Tenant } from "@/lib/supabase/types";
+import type { ProductRow } from "@/lib/data/products";
 
 interface ProductFormProps {
   tenant: Tenant;
   locale: string;
+  editProduct?: ProductRow | null;
   onClose: () => void;
   onSuccess: () => void;
 }
 
-export function ProductForm({ tenant, locale, onClose, onSuccess }: ProductFormProps) {
+export function ProductForm({ tenant, locale, editProduct, onClose, onSuccess }: ProductFormProps) {
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [formData, setFormData] = useState({
-    name: { es: "", en: "" },
-    description: { es: "", en: "" },
+    name: { es: "", en: "" } as Record<string, string>,
+    description: { es: "", en: "" } as Record<string, string>,
     price: 0,
     stock: 0,
     category: "",
     stock_alert_threshold: 5,
+    active: true,
   });
+
+  const isEditing = !!editProduct;
+
+  useEffect(() => {
+    if (editProduct) {
+      setFormData({
+        name: editProduct.name ?? { es: "" },
+        description: (editProduct.description as Record<string, string>) ?? { es: "" },
+        price: editProduct.price,
+        stock: editProduct.stock,
+        category: editProduct.category ?? "",
+        stock_alert_threshold: editProduct.stock_alert_threshold,
+        active: editProduct.active,
+      });
+    }
+  }, [editProduct]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
-    
-    // Simulación en dev
-    setTimeout(() => {
-      setLoading(false);
+    setError(null);
+
+    const tenantSlug = typeof window !== "undefined"
+      ? new URLSearchParams(window.location.search).get("tenant") ?? tenant.slug
+      : tenant.slug;
+
+    try {
+      if (isEditing) {
+        const res = await fetch(`/api/admin/productos?tenant=${tenantSlug}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ id: editProduct!.id, ...formData }),
+        });
+        const data = await res.json();
+        if (!res.ok || !data.success) throw new Error(data.error || "Error al actualizar");
+      } else {
+        const res = await fetch(`/api/admin/productos?tenant=${tenantSlug}`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ ...formData, tenant_id: tenant.id }),
+        });
+        const data = await res.json();
+        if (!res.ok || !data.success) throw new Error(data.error || "Error al crear");
+      }
       onSuccess();
       onClose();
-    }, 1000);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Error al guardar");
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
@@ -41,7 +85,7 @@ export function ProductForm({ tenant, locale, onClose, onSuccess }: ProductFormP
         {/* Header */}
         <div className="flex items-center justify-between border-b border-[var(--brand-border)] px-6 py-4">
           <h3 className="text-lg font-bold" style={{ color: "var(--brand-text)", fontFamily: "var(--font-heading)" }}>
-            Nuevo Producto
+            {isEditing ? "Editar Producto" : "Nuevo Producto"}
           </h3>
           <button onClick={onClose} className="rounded-full p-2 opacity-40 hover:bg-zinc-500/10 hover:opacity-100">
             <X size={20} />
@@ -116,6 +160,26 @@ export function ProductForm({ tenant, locale, onClose, onSuccess }: ProductFormP
             <Upload className="mx-auto mb-2 opacity-20" size={24} />
             <p className="text-xs opacity-40">Haz clic para subir imagen del producto</p>
           </div>
+
+          {isEditing && (
+            <label className="flex items-center gap-3 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={formData.active}
+                onChange={(e) => setFormData((prev) => ({ ...prev, active: e.target.checked }))}
+                className="h-4 w-4 rounded accent-[var(--brand-primary)]"
+              />
+              <span className="text-xs font-semibold opacity-60" style={{ color: "var(--brand-text)" }}>
+                Producto activo (visible en tienda)
+              </span>
+            </label>
+          )}
+
+          {error && (
+            <p className="rounded-xl border border-red-500/20 bg-red-500/5 px-3 py-2 text-xs text-red-400">
+              {error}
+            </p>
+          )}
         </form>
 
         {/* Footer */}
@@ -132,7 +196,7 @@ export function ProductForm({ tenant, locale, onClose, onSuccess }: ProductFormP
             className="flex items-center gap-2 rounded-full bg-[var(--brand-primary)] px-6 py-2.5 text-xs font-bold text-white shadow-lg transition-transform hover:scale-105 active:scale-95 disabled:opacity-50"
           >
             {loading ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />}
-            {loading ? "Guardando..." : "Guardar Producto"}
+            {loading ? "Guardando..." : isEditing ? "Actualizar Producto" : "Guardar Producto"}
           </button>
         </div>
       </div>

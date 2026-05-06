@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getProducts, updateDevProduct, type ProductRow } from "@/lib/data/products";
+import { getProducts, updateDevProduct, addDevProduct, type ProductRow } from "@/lib/data/products";
 import { getTenant } from "@/lib/tenant";
 
 function isDevMode() {
@@ -69,19 +69,25 @@ export async function POST(request: NextRequest) {
   }
 
   const body = await request.json();
+  const { searchParams } = request.nextUrl;
+  const tenantSlug = searchParams.get("tenant") ?? "fm-glow-studio";
+  const tenant = await getTenant(tenantSlug);
+  const tenantId = tenant?.id ?? "dev-fm-glow-studio";
+
   const newId = `dev-prod-${Date.now()}`;
-  const newProduct: Partial<ProductRow> = {
+  const newProduct: ProductRow = {
     id: newId,
-    tenant_id: body.tenant_id ?? "",
+    tenant_id: tenantId,
     name: body.name ?? { es: "Nuevo producto" },
     description: body.description ?? null,
     price: body.price ?? 0,
     stock: body.stock ?? 0,
-    stock_alert_threshold: 5,
+    stock_alert_threshold: body.stock_alert_threshold ?? 5,
     category: body.category ?? null,
+    image_url: body.image_url ?? null,
     active: true,
     created_at: new Date().toISOString(),
   };
-  updateDevProduct(newId, newProduct as ProductRow);
+  addDevProduct(tenantId, newProduct);
   return NextResponse.json({ success: true, product: newProduct }, { status: 201 });
 }
